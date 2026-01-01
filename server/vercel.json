@@ -1,9 +1,0 @@
-{
-    "version": 2,
-    "routes": [
-        { "src": "/health", "dest": "/api/index.js" },
-        { "src": "/superadmin/(.*)", "dest": "/api/index.js" },
-        { "src": "/guest/(.*)", "dest": "/api/index.js" },
-        { "src": "/admin/(.*)", "dest": "/api/index.js" }
-    ]
-}

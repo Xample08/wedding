@@ -2,20 +2,105 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-## MySQL
+## Backend-only API
 
-This project includes a server-side MySQL connection pool helper in [src/lib/mysql.ts](src/lib/mysql.ts).
+This is a backend-only Next.js (App Router) API project. The root page returns 404 by design.
 
-1. Create a `.env.local` file (or set env vars in your host) based on `.env.example`.
-2. Install deps: `npm install`
+### Environment
 
-Required environment variables:
+Create a `.env.local` file (or set env vars in your host) based on `.env.example`.
+
+MySQL connection (used server-side only):
 
 -   `MYSQL_HOST`
 -   `MYSQL_PORT` (optional, defaults to `3306`)
 -   `MYSQL_USER`
 -   `MYSQL_PASSWORD`
 -   `MYSQL_DATABASE`
+
+API protection:
+
+-   `SUPERADMIN_API_KEY`
+-   `ADMIN_API_KEY`
+
+Invitation URL generation (superadmin create response):
+
+-   `INVITE_BASE_URL` (e.g. `https://your-domain.com`)
+-   `INVITE_PATH_PREFIX` (default `/invite`)
+
+The MySQL pool is created in [src/db/connection.ts](src/db/connection.ts) (loads env via `dotenv`).
+
+### API Routes
+
+-   `POST /api/superadmin/invitations` (protected)
+-   `DELETE /api/superadmin/invitations/:token` (protected, soft delete)
+-   `GET /api/guest/invitations/:token` (public)
+-   `PATCH /api/guest/invitations/:token` (public, prevents double submit)
+-   `GET /api/admin/invitations` (protected, supports filters)
+-   `PATCH /api/admin/invitations/:token` (protected)
+-   `GET /api/admin/summary` (protected, supports filters)
+
+### Curl Examples
+
+Create an invitation (superadmin):
+
+```bash
+curl -X POST http://localhost:3000/api/superadmin/invitations \
+	-H "Authorization: Bearer $SUPERADMIN_API_KEY" \
+	-H "Content-Type: application/json" \
+	-d '{
+		"name": "John Doe",
+		"number_of_guests": 2,
+		"is_family": true,
+		"type": "both"
+	}'
+```
+
+Fetch invitation (guest):
+
+```bash
+curl http://localhost:3000/api/guest/invitations/<token>
+```
+
+Submit RSVP (guest):
+
+```bash
+curl -X PATCH http://localhost:3000/api/guest/invitations/<token> \
+	-H "Content-Type: application/json" \
+	-d '{
+		"display_name": "John & Family",
+		"is_attending": "yes",
+		"teapai": "pagi",
+		"wishes": "Congratulations!"
+	}'
+```
+
+Admin list (filters are optional):
+
+```bash
+curl "http://localhost:3000/api/admin/invitations?is_attending=yes&type=both" \
+	-H "Authorization: Bearer $ADMIN_API_KEY"
+```
+
+Admin update event-day fields:
+
+```bash
+curl -X PATCH http://localhost:3000/api/admin/invitations/<token> \
+	-H "Authorization: Bearer $ADMIN_API_KEY" \
+	-H "Content-Type: application/json" \
+	-d '{
+		"actual_attendance": 2,
+		"gave_gift": true,
+		"admin_note": "Arrived at 19:10"
+	}'
+```
+
+Admin summary:
+
+```bash
+curl "http://localhost:3000/api/admin/summary" \
+	-H "Authorization: Bearer $ADMIN_API_KEY"
+```
 
 First, run the development server:
 

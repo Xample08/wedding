@@ -6,6 +6,7 @@ type SectionsScrollerProps = {
     backgrounds: string[];
     scrollContainerRef: RefObject<HTMLDivElement | null>;
     showChrome?: boolean;
+    rsvpSlot?: React.ReactNode;
 };
 
 export function SectionsScroller({
@@ -13,6 +14,7 @@ export function SectionsScroller({
     backgrounds,
     scrollContainerRef,
     showChrome = true,
+    rsvpSlot,
 }: SectionsScrollerProps) {
     const sectionIds = useMemo(
         () => sections.map((_, idx) => `slide-${idx}`),
@@ -86,24 +88,33 @@ export function SectionsScroller({
                     <section
                         id={sectionIds[idx]}
                         key={section.title}
-                        className="relative flex h-screen snap-start items-center justify-center px-8"
+                        className="relative flex h-screen snap-start px-8"
                         style={{
                             backgroundImage:
                                 backgrounds[idx % backgrounds.length],
                         }}
                     >
-                        <div className="max-w-md rounded-3xl bg-white/80 p-8 text-center shadow-xl backdrop-blur">
-                            <p className="mb-3 text-xs uppercase tracking-[0.3em] text-rose-500">
-                                {String(idx + 1).padStart(2, "0")} ·{" "}
-                                {idx === 0 ? "Welcome" : "Details"}
-                            </p>
-                            <h2 className="text-3xl font-semibold text-zinc-900">
-                                {section.title}
-                            </h2>
-                            <p className="mt-4 text-base leading-relaxed text-zinc-700">
-                                {section.body}
-                            </p>
-                        </div>
+                        {section.title === "RSVP" && rsvpSlot ? (
+                            <>
+                                <div className="absolute inset-0 bg-black" />
+                                <div className="relative z-10 w-full max-w-2xl px-2 pt-16 pb-10">
+                                    {rsvpSlot}
+                                </div>
+                            </>
+                        ) : (
+                            <div className="max-w-md rounded-3xl bg-white/80 p-8 text-center shadow-xl backdrop-blur">
+                                <p className="mb-3 text-xs uppercase tracking-[0.3em] text-rose-500">
+                                    {String(idx + 1).padStart(2, "0")} ·{" "}
+                                    {idx === 0 ? "Welcome" : "Details"}
+                                </p>
+                                <h2 className="text-3xl font-semibold text-zinc-900">
+                                    {section.title}
+                                </h2>
+                                <p className="mt-4 text-base leading-relaxed text-zinc-700">
+                                    {section.body}
+                                </p>
+                            </div>
+                        )}
                     </section>
                 ))}
             </div>

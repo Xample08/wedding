@@ -1,8 +1,9 @@
 type InviteScreenProps = {
     onOpen: () => void;
+    recipientName?: string | null;
 };
 
-export function InviteScreen({ onOpen }: InviteScreenProps) {
+export function InviteScreen({ onOpen, recipientName }: InviteScreenProps) {
     return (
         <div className="relative flex min-h-screen flex-col bg-linear-to-b from-zinc-900 via-zinc-900 to-black px-8 py-20 text-center text-white">
             <div className="absolute inset-0 bg-black/40" />
@@ -25,7 +26,9 @@ export function InviteScreen({ onOpen }: InviteScreenProps) {
                         Dear
                     </p>
                     <p className="font-times-italic text-2xl tracking-[0.08em] text-white">
-                        Theofilus Sinjaya
+                        {recipientName && recipientName.trim().length > 0
+                            ? recipientName
+                            : "Guest"}
                     </p>
                     <p className="font-inter max-w-xs text-[11px] text-white/80">
                         We would appreciate and be honored to have you
