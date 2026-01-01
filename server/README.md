@@ -20,6 +20,40 @@ npm run dev
 
 Health check: `GET http://localhost:4000/health`
 
+## Deploy to Vercel
+
+Vercel does **not** run long-lived Node servers (no `app.listen()` in production). Instead, this project exports the Express app as a **Serverless Function**.
+
+This repository already contains the needed files:
+
+-   [api/index.js](api/index.js) (Vercel Function entry)
+-   [src/app.js](src/app.js) (exports the Express app)
+-   [vercel.json](vercel.json) (routes `/guest`, `/admin`, `/superadmin` to the function)
+
+### Steps
+
+1. In Vercel, click **Add New → Project**.
+2. Import your Git repo.
+3. Set **Root Directory** to `server`.
+4. Set environment variables (Project Settings → Environment Variables):
+
+-   `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE`
+-   `SUPERADMIN_API_KEY`, `ADMIN_API_KEY`
+-   `INVITE_URL_BASE` (optional)
+
+5. Deploy.
+
+After deploy, your endpoints will be available at:
+
+-   `https://<your-project>.vercel.app/health`
+-   `https://<your-project>.vercel.app/guest/...`
+-   `https://<your-project>.vercel.app/admin/...`
+-   `https://<your-project>.vercel.app/superadmin/...`
+
+### MySQL connectivity note
+
+Your MySQL server must be reachable from Vercel (public host, correct firewall/allowlist, etc.). If your DB is private/network-restricted, you’ll need to expose it securely or use a hosted MySQL provider / proxy that supports serverless environments.
+
 ## Auth
 
 Admin / Superadmin endpoints require an API key:

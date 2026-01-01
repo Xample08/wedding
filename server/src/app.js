@@ -8,8 +8,10 @@ const adminRoutes = require("./routes/admin.routes");
 
 const app = express();
 
-// If you deploy behind a proxy/load balancer, enable this
-// app.set("trust proxy", true);
+// Vercel runs behind a proxy; this makes req.ip reflect x-forwarded-for.
+if (process.env.VERCEL) {
+    app.set("trust proxy", true);
+}
 
 app.use(express.json({ limit: "64kb" }));
 
@@ -41,8 +43,4 @@ app.use((err, req, res, next) => {
     res.status(status).json({ error: message });
 });
 
-const port = process.env.PORT ? Number(process.env.PORT) : 4000;
-app.listen(port, () => {
-    // eslint-disable-next-line no-console
-    console.log(`RSVP API listening on http://localhost:${port}`);
-});
+module.exports = app;
