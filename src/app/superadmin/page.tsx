@@ -9,7 +9,7 @@ export default async function SuperadminPage() {
     const token = cookieStore.get(getAuthCookieName())?.value;
     const session = token ? verifySessionToken(token) : null;
     if (!session || session.role !== "super_admin") {
-        redirect("/login?next=/superadmin");
+        redirect("/");
     }
 
     return (
