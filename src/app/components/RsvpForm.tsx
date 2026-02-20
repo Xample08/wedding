@@ -11,6 +11,7 @@ type RsvpFormProps = {
 
 type FormData = {
     displayName: string;
+    expectedAttendance: number | null;
     isAttending: boolean | null;
     wishes: string;
     teapai: Teapai | null;
@@ -23,6 +24,7 @@ export default function RsvpForm({
     const [currentStep, setCurrentStep] = useState(1);
     const [formData, setFormData] = useState<FormData>({
         displayName: invitation.display_name || invitation.name,
+        expectedAttendance: invitation.expected_attendance || null,
         isAttending: invitation.is_attending,
         wishes: invitation.wishes || "",
         teapai: invitation.teapai,
@@ -31,7 +33,7 @@ export default function RsvpForm({
     const [error, setError] = useState<string | null>(null);
 
     const isEditing = invitation.responded_at !== null;
-    const totalSteps = invitation.is_family ? 4 : 3;
+    const totalSteps = invitation.is_family ? 5 : 4;
 
     const handleNext = () => {
         if (currentStep < totalSteps) {
@@ -57,6 +59,7 @@ export default function RsvpForm({
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         displayName: formData.displayName,
+                        expectedAttendance: formData.expectedAttendance,
                         isAttending: formData.isAttending,
                         wishes: formData.wishes,
                         teapai: formData.teapai,
@@ -82,6 +85,13 @@ export default function RsvpForm({
         if (!formData.displayName || !formData.displayName.trim()) {
             return false;
         }
+        if (
+            formData.expectedAttendance === null ||
+            formData.expectedAttendance < 1 ||
+            formData.expectedAttendance > invitation.number_of_guests
+        ) {
+            return false;
+        }
         if (formData.isAttending === null) {
             return false;
         }
@@ -96,9 +106,16 @@ export default function RsvpForm({
             return !!formData.displayName.trim();
         }
         if (currentStep === 2) {
+            return (
+                formData.expectedAttendance !== null &&
+                formData.expectedAttendance >= 1 &&
+                formData.expectedAttendance <= invitation.number_of_guests
+            );
+        }
+        if (currentStep === 3) {
             return formData.isAttending !== null;
         }
-        if (currentStep === 4 && invitation.is_family) {
+        if (currentStep === 5 && invitation.is_family) {
             return !!formData.teapai;
         }
         return true;
@@ -177,6 +194,41 @@ export default function RsvpForm({
                     )}
 
                     {currentStep === 2 && (
+                        <div className="space-y-2 w-full">
+                            <label className="font-inter text-[12px] text-white/70">
+                                Number of guests (max:{" "}
+                                {invitation.number_of_guests})
+                            </label>
+                            <input
+                                type="number"
+                                min="1"
+                                max={invitation.number_of_guests}
+                                value={formData.expectedAttendance ?? ""}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    const num =
+                                        val === "" ? null : parseInt(val, 10);
+                                    setFormData({
+                                        ...formData,
+                                        expectedAttendance: num,
+                                    });
+                                }}
+                                className="w-full border-0 border-b border-white/35 bg-transparent px-0 py-3 font-inter text-[15px] text-white placeholder:text-white/45 focus:outline-none focus:ring-0"
+                                placeholder="Enter number of guests"
+                            />
+                            {formData.expectedAttendance !== null &&
+                            (formData.expectedAttendance < 1 ||
+                                formData.expectedAttendance >
+                                    invitation.number_of_guests) ? (
+                                <p className="text-[12px] text-rose-200 font-inter">
+                                    Please enter a valid number (1-
+                                    {invitation.number_of_guests}).
+                                </p>
+                            ) : null}
+                        </div>
+                    )}
+
+                    {currentStep === 3 && (
                         <div className="space-y-3 w-full">
                             <p className="font-inter text-[12px] text-white/70">
                                 Will you attend?
@@ -226,7 +278,7 @@ export default function RsvpForm({
                         </div>
                     )}
 
-                    {currentStep === 3 && (
+                    {currentStep === 4 && (
                         <div className="space-y-2 w-full">
                             <label className="font-inter text-[12px] text-white/70">
                                 Wishes (optional)
@@ -252,7 +304,7 @@ export default function RsvpForm({
                         </div>
                     )}
 
-                    {currentStep === 4 && invitation.is_family && (
+                    {currentStep === 5 && invitation.is_family && (
                         <div className="space-y-3 w-full">
                             <p className="font-inter text-[12px] text-white/70">
                                 Jadwal Teapai

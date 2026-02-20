@@ -5,6 +5,7 @@ import { InviteScreen } from "../components/InviteScreen";
 import { LoadingScreen } from "../components/LoadingScreen";
 import { SectionsScroller } from "../components/SectionsScroller";
 import RsvpForm from "@/app/components/RsvpForm";
+import QRCodeSection from "@/app/components/QRCodeSection";
 import { BACKGROUNDS } from "../data/backgrounds";
 import { LOADING_IMAGES } from "../data/loadingImages";
 import { SECTIONS } from "../data/sections";
@@ -121,6 +122,13 @@ export function InviteExperience({
 
         window.setTimeout(() => setShowSuccessMessage(false), 3000);
     };
+
+    const qrCodeSlot =
+        tokenOk && token ? (
+            <div className="w-full px-4">
+                <QRCodeSection token={token} name={invitation?.name} />
+            </div>
+        ) : null;
 
     const rsvpSlot = (
         <div className="w-full px-4">
@@ -239,6 +247,7 @@ export function InviteExperience({
             backgrounds={BACKGROUNDS}
             scrollContainerRef={scrollContainerRef}
             rsvpSlot={rsvpSlot}
+            qrCodeSlot={qrCodeSlot}
         />
     );
 }

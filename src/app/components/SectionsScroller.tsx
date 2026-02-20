@@ -7,6 +7,7 @@ type SectionsScrollerProps = {
     scrollContainerRef: RefObject<HTMLDivElement | null>;
     showChrome?: boolean;
     rsvpSlot?: React.ReactNode;
+    qrCodeSlot?: React.ReactNode;
 };
 
 export function SectionsScroller({
@@ -15,6 +16,7 @@ export function SectionsScroller({
     scrollContainerRef,
     showChrome = true,
     rsvpSlot,
+    qrCodeSlot,
 }: SectionsScrollerProps) {
     const sectionIds = useMemo(
         () => sections.map((_, idx) => `slide-${idx}`),
@@ -117,6 +119,21 @@ export function SectionsScroller({
                         )}
                     </section>
                 ))}
+                {qrCodeSlot && (
+                    <section
+                        id="qr-code-section"
+                        className="relative flex h-screen snap-start px-8"
+                        style={{
+                            backgroundImage:
+                                backgrounds[backgrounds.length - 1],
+                        }}
+                    >
+                        <div className="absolute inset-0 bg-black" />
+                        <div className="relative z-10 w-full max-w-2xl px-2 pt-16 pb-10">
+                            {qrCodeSlot}
+                        </div>
+                    </section>
+                )}
             </div>
 
             {showChrome ? (

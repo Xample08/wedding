@@ -42,6 +42,17 @@ export async function guestSubmitRsvp(params: {
         );
     }
 
+    const expectedAttendanceRaw = params.body.expectedAttendance;
+    if (
+        typeof expectedAttendanceRaw !== "number" ||
+        expectedAttendanceRaw < 1
+    ) {
+        throw Object.assign(
+            new Error("expectedAttendance must be a positive number"),
+            { status: 400 }
+        );
+    }
+
     const displayNameRaw = params.body.displayName;
     const wishesRaw = params.body.wishes;
     const teapaiRaw = params.body.teapai;
@@ -56,6 +67,16 @@ export async function guestSubmitRsvp(params: {
     const existing = await getInvitationByToken(params.urlToken);
     if (!existing) {
         throw Object.assign(new Error("Not found"), { status: 404 });
+    }
+
+    // Validate expected_attendance against number_of_guests
+    if (expectedAttendanceRaw > existing.number_of_guests) {
+        throw Object.assign(
+            new Error(
+                `expectedAttendance cannot exceed ${existing.number_of_guests}`
+            ),
+            { status: 400 }
+        );
     }
 
     let teapai: "pagi" | "malam" | null = null;
@@ -76,6 +97,7 @@ export async function guestSubmitRsvp(params: {
         const result = await updateGuestRsvp({
             urlToken: params.urlToken,
             displayName,
+            expectedAttendance: expectedAttendanceRaw,
             isAttending,
             wishes,
             teapai,
@@ -92,6 +114,7 @@ export async function guestSubmitRsvp(params: {
         const result = await submitGuestRsvp({
             urlToken: params.urlToken,
             displayName,
+            expectedAttendance: expectedAttendanceRaw,
             isAttending,
             wishes,
             teapai,

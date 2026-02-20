@@ -9,6 +9,7 @@ export type InvitationPublic = {
     name: string;
     display_name: string | null;
     number_of_guests: number;
+    expected_attendance: number | null;
     is_attending: boolean | null;
     is_family: boolean;
     type: InvitationType;
@@ -43,6 +44,10 @@ function rowToPublic(row: any): InvitationPublic {
         display_name:
             row.display_name == null ? null : String(row.display_name),
         number_of_guests: Number(row.number_of_guests),
+        expected_attendance:
+            row.expected_attendance == null
+                ? null
+                : Number(row.expected_attendance),
         is_attending:
             row.is_attending == null ? null : Boolean(Number(row.is_attending)),
         is_family: Boolean(Number(row.is_family)),
@@ -147,7 +152,7 @@ export async function getInvitationByToken(
 ): Promise<InvitationPublic | null> {
     const [rows] = await retryDbOperation(() =>
         pool.execute(
-            `SELECT url_token, name, display_name, number_of_guests, is_attending, is_family, type, teapai, wishes, responded_at, show_wishes
+            `SELECT url_token, name, display_name, number_of_guests, expected_attendance, is_attending, is_family, type, teapai, wishes, responded_at, show_wishes
              FROM invitations
              WHERE url_token = ? AND deleted_at IS NULL
              LIMIT 1`,
@@ -162,6 +167,7 @@ export async function getInvitationByToken(
 export async function submitGuestRsvp(input: {
     urlToken: string;
     displayName: string | null;
+    expectedAttendance: number;
     isAttending: boolean;
     wishes: string | null;
     teapai: Teapai | null;
@@ -175,6 +181,7 @@ export async function submitGuestRsvp(input: {
         pool.execute<ResultSetHeader>(
             `UPDATE invitations
              SET display_name = ?,
+                 expected_attendance = ?,
                  is_attending = ?,
                  wishes = ?,
                  teapai = ?,
@@ -187,6 +194,7 @@ export async function submitGuestRsvp(input: {
                AND responded_at IS NULL`,
             [
                 input.displayName,
+                input.expectedAttendance,
                 input.isAttending ? 1 : 0,
                 input.wishes,
                 input.teapai,
@@ -227,6 +235,7 @@ export async function submitGuestRsvp(input: {
 export async function updateGuestRsvp(input: {
     urlToken: string;
     displayName: string | null;
+    expectedAttendance: number;
     isAttending: boolean;
     wishes: string | null;
     teapai: Teapai | null;
@@ -249,6 +258,7 @@ export async function updateGuestRsvp(input: {
         pool.execute<ResultSetHeader>(
             `UPDATE invitations
              SET display_name = ?,
+                 expected_attendance = ?,
                  is_attending = ?,
                  wishes = ?,
                  teapai = ?,
@@ -261,6 +271,7 @@ export async function updateGuestRsvp(input: {
                AND responded_at IS NOT NULL`,
             [
                 input.displayName,
+                input.expectedAttendance,
                 input.isAttending ? 1 : 0,
                 input.wishes,
                 input.teapai,
