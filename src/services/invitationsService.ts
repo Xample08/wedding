@@ -422,3 +422,29 @@ export async function adminSummary(filters: {
         souvenir_count: Number(row.souvenir_count ?? 0),
     };
 }
+
+export type WishPublic = {
+    display_name: string;
+    wishes: string;
+    responded_at: string;
+};
+
+export async function getPublicWishes(): Promise<WishPublic[]> {
+    const [rows] = await retryDbOperation(() =>
+        pool.execute(
+            `SELECT COALESCE(display_name, name) AS display_name, wishes, responded_at
+             FROM invitations
+             WHERE show_wishes = 1
+               AND wishes IS NOT NULL
+               AND wishes != ''
+               AND deleted_at IS NULL
+             ORDER BY responded_at DESC`
+        )
+    );
+
+    return (rows as any[]).map((row) => ({
+        display_name: String(row.display_name),
+        wishes: String(row.wishes),
+        responded_at: String(row.responded_at),
+    }));
+}

@@ -190,16 +190,6 @@ export function InviteExperience({
         const firstSection = SECTIONS[0];
         return (
             <div className="relative h-screen w-full overflow-hidden">
-                {!isOpening ? (
-                    <div className="absolute inset-0 pointer-events-none">
-                        <SectionsScroller
-                            sections={SECTIONS}
-                            backgrounds={BACKGROUNDS}
-                            scrollContainerRef={scrollContainerRef}
-                            showChrome={false}
-                        />
-                    </div>
-                ) : null}
 
                 <div className="invite-flip-scene">
                     <div
@@ -216,27 +206,87 @@ export function InviteExperience({
                         <div className="invite-flip-face invite-flip-back">
                             <section
                                 className="relative flex h-screen items-center justify-center px-8"
-                                style={{
-                                    backgroundImage:
-                                        BACKGROUNDS[0] ??
-                                        "linear-gradient(135deg, #fce7f3 0%, #f1f5f9 100%)",
-                                }}
                             >
-                                <div className="max-w-md rounded-3xl bg-white/80 p-8 text-center shadow-xl backdrop-blur">
-                                    <p className="mb-3 text-xs uppercase tracking-[0.3em] text-rose-500">
-                                        {"01"} · {"Welcome"}
-                                    </p>
-                                    <h2 className="text-3xl font-semibold text-zinc-900">
+                                {/* Background photo */}
+                                <div
+                                    className="absolute inset-0 bg-cover bg-center"
+                                    style={{
+                                        backgroundImage: `url(${firstSection?.heroImage ?? "/hero-bg.jpg"}), linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%)`,
+                                    }}
+                                />
+                                {/* Dark overlay */}
+                                <div className="absolute inset-0 bg-black/40" />
+
+                                {/* Centered content */}
+                                <div className="relative z-10 flex w-full flex-col items-center justify-center text-center text-white">
+                                    {/* Floral icon */}
+                                    <img
+                                        src="/floral-icon.svg"
+                                        alt=""
+                                        className="mb-5 h-8 w-8 brightness-0 invert opacity-80"
+                                    />
+
+                                    {firstSection?.subtitle && (
+                                        <p className="font-inter text-[11px] uppercase tracking-[0.25em] text-white/85">
+                                            {firstSection.subtitle}
+                                        </p>
+                                    )}
+
+                                    <h1 className="mt-3 font-ovo text-[28px] uppercase tracking-[0.12em] text-white sm:text-4xl">
                                         {firstSection?.title}
-                                    </h2>
-                                    <p className="mt-4 text-base leading-relaxed text-zinc-700">
-                                        {firstSection?.body}
-                                    </p>
+                                    </h1>
+
+                                    {firstSection?.date && (
+                                        <p className="mt-3 font-inter text-[11px] uppercase tracking-[0.25em] text-white/85">
+                                            {firstSection.date}
+                                        </p>
+                                    )}
+
+                                    {/* Scroll-down arrow (same as SectionsScroller hero) */}
+                                    <button
+                                        type="button"
+                                        aria-label="Scroll down"
+                                        className="mt-30 mb-30 flex h-8 w-8 items-center justify-center rounded-full border border-white/50 text-white/80 transition hover:bg-white/10 animate-scroll-bounce"
+                                    >
+                                        <svg
+                                            className="h-3.5 w-3.5"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        >
+                                            <path d="M12 5v14" />
+                                            <path d="M19 12l-7 7-7-7" />
+                                        </svg>
+                                    </button>
                                 </div>
                             </section>
                         </div>
                     </div>
                 </div>
+
+                {/* ── Chrome overlays shown during flip so they don't vanish ── */}
+                {isOpening && (
+                    <>
+                        {/* Page number (bottom-left) */}
+                        <div className="pointer-events-none absolute bottom-5 left-5 z-[9999] text-[12px] uppercase tracking-[0.25em] text-white/85 animate-flip-chrome-in">
+                            1/{SECTIONS.length}
+                        </div>
+
+                        {/* Burger menu button (top-right) */}
+                        <div
+                            className="absolute right-5 top-5 z-[9999] flex h-10 w-10 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur animate-flip-chrome-in"
+                        >
+                            <span className="flex flex-col gap-1">
+                                <span className="block h-0.5 w-5 bg-white/90" />
+                                <span className="block h-0.5 w-5 bg-white/90" />
+                                <span className="block h-0.5 w-5 bg-white/90" />
+                            </span>
+                        </div>
+                    </>
+                )}
             </div>
         );
     }
