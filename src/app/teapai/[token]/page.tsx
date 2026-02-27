@@ -200,7 +200,7 @@ export default function TeapaiGuestPage({ params }: { params: Promise<{ token: s
                                             className="space-y-4 overflow-hidden pt-4 px-1 border-t border-red-50"
                                         >
                                             <div>
-                                                <label className="block text-sm font-medium text-slate-600 mb-1">Display Name</label>
+                                                <label className="block text-sm font-medium text-slate-600 mb-1">Name</label>
                                                 <input
                                                     type="text"
                                                     value={displayName}
