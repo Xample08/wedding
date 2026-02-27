@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 // Guest: Get invitation details
 export async function GET(
     req: NextRequest,
-    { params }: { params: { token: string } }
+    { params }: { params: Promise<{ token: string }> }
 ) {
     try {
         const { token } = await params;
@@ -31,7 +31,7 @@ export async function GET(
 // Guest: Update response
 export async function PATCH(
     req: NextRequest,
-    { params }: { params: { token: string } }
+    { params }: { params: Promise<{ token: string }> }
 ) {
     try {
         const { token } = await params;
