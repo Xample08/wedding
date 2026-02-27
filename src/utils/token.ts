@@ -19,3 +19,13 @@ export function buildInvitationUrl(urlToken: string): string {
 
     return `${normalizedBase}${normalizedPrefix}/${urlToken}`;
 }
+
+export function buildTeapaiUrl(urlToken: string): string {
+    const base = (process.env.INVITE_BASE_URL || "").trim();
+    if (!base) {
+        return `/teapai/${urlToken}`;
+    }
+
+    const normalizedBase = base.replace(/\/$/, "");
+    return `${normalizedBase}/teapai/${urlToken}`;
+}

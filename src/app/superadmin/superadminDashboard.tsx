@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 type InvitationRow = {
     url_token: string;
@@ -36,6 +38,7 @@ type ConfirmDelete = {
 };
 
 export function SuperadminDashboard() {
+    const pathname = usePathname();
     const [rows, setRows] = useState<InvitationRow[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -288,13 +291,38 @@ export function SuperadminDashboard() {
         <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 to-slate-100">
             <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 {/* Header */}
-                <div className="mb-8">
-                    <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-                        Superadmin Dashboard
-                    </h1>
-                    <p className="mt-2 text-slate-600">
-                        Manage wedding invitations
-                    </p>
+                <div className="mb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+                    <div>
+                        <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+                            Superadmin Dashboard
+                        </h1>
+                        <p className="mt-2 text-slate-600">
+                            Manage wedding website administrative data
+                        </p>
+                    </div>
+
+                    <nav className="flex items-center gap-1 bg-white p-1 rounded-2xl shadow-sm border border-slate-200">
+                        <Link
+                            href="/superadmin"
+                            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                                pathname === "/superadmin"
+                                    ? "bg-slate-900 text-white shadow-md"
+                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                            }`}
+                        >
+                            RSVP Invitations
+                        </Link>
+                        <Link
+                            href="/superadmin/teapai"
+                            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                                pathname === "/superadmin/teapai"
+                                    ? "bg-slate-900 text-white shadow-md"
+                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                            }`}
+                        >
+                            Teapai Master
+                        </Link>
+                    </nav>
                 </div>
 
                 {/* Create Button */}
@@ -344,7 +372,7 @@ export function SuperadminDashboard() {
                                             name: e.target.value,
                                         }))
                                     }
-                                    className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                                    className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-black placeholder:text-black focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
                                     placeholder="Enter guest name"
                                 />
                             </div>
@@ -365,7 +393,7 @@ export function SuperadminDashboard() {
                                             ),
                                         }))
                                     }
-                                    className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                                    className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-black focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
                                 />
                             </div>
 
@@ -382,7 +410,7 @@ export function SuperadminDashboard() {
                                                 .value as CreateInput["type"],
                                         }))
                                     }
-                                    className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                                    className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-black focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
                                 >
                                     <option value="resepsi">Resepsi</option>
                                     <option value="holy_matrimony">
@@ -424,7 +452,7 @@ export function SuperadminDashboard() {
                                         }))
                                     }
                                     rows={3}
-                                    className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all resize-none"
+                                    className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-black placeholder:text-black focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all resize-none"
                                     placeholder="Add internal notes about this invitation..."
                                 />
                             </div>
@@ -487,7 +515,7 @@ export function SuperadminDashboard() {
                                         setSearchTerm(e.target.value)
                                     }
                                     placeholder="Search by name, token, or display name..."
-                                    className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                                    className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 text-black placeholder:text-black focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
                                 />
                             </div>
                         </div>
