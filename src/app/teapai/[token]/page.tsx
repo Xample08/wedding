@@ -109,9 +109,9 @@ export default function TeapaiGuestPage({ params }: { params: Promise<{ token: s
     );
 
     return (
-        <div className="min-h-screen w-full bg-slate-900 flex items-center justify-center font-serif overflow-hidden">
+        <div className="fixed inset-0 w-full h-full bg-slate-900 flex items-center justify-center font-serif overflow-hidden overscroll-none touch-pan-y">
             {/* Mobile-centric Frame */}
-            <main className="relative h-[100dvh] w-full max-w-[435px] bg-[#fdfaf1] shadow-2xl overflow-hidden font-serif">
+            <main className="relative h-full w-full max-w-[435px] bg-[#fdfaf1] shadow-2xl overflow-hidden font-serif">
                 {/* Background Images with smooth transition */}
                 <div className="absolute inset-0 z-0">
                     <AnimatePresence mode="wait">
@@ -136,8 +136,13 @@ export default function TeapaiGuestPage({ params }: { params: Promise<{ token: s
                     </AnimatePresence>
                 </div>
 
-                {/* Content Container (Scrollable) */}
-                <div className="relative z-10 h-full w-full overflow-y-auto no-scrollbar pt-12 pb-20 px-6">
+                {/* Content Container (Scrollable but clean) */}
+                <div className="relative z-10 h-full w-full overflow-y-auto pt-8 pb-12 px-6 scroll-smooth" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                    <style jsx global>{`
+                        .no-scrollbar::-webkit-scrollbar {
+                            display: none;
+                        }
+                    `}</style>
                     <AnimatePresence mode="wait">
                         {!submitted ? (
                             <motion.div
@@ -148,7 +153,7 @@ export default function TeapaiGuestPage({ params }: { params: Promise<{ token: s
                                 className="bg-transparent py-8 px-4 overflow-hidden"
                             >
                                 <div className="text-center mb-8">
-                                    <h1 className="text-3xl font-bold text-[#b4352a] mb-2">Tea Ceremony</h1>
+                                    <h1 className="text-3xl font-bold text-[#b4352a] mb-2">Teapai Ceremony</h1>
                                     <p className="text-slate-500 italic">Teapai Invitation</p>
                                     <div className="mt-4 text-xl font-medium text-slate-800">
                                         Dear {data.name},
@@ -159,7 +164,7 @@ export default function TeapaiGuestPage({ params }: { params: Promise<{ token: s
                             <div className="space-y-6">
                                 <div>
                                     <label className="block text-center text-lg font-medium text-slate-700 mb-4">
-                                        Will you attend the Tea Ceremony?
+                                        Will you attend the Teapai Ceremony?
                                     </label>
                                     <div className="flex gap-4">
                                         <button
