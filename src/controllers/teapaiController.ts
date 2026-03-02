@@ -11,6 +11,8 @@ export async function adminCreateTeapai(body: unknown) {
 
     const nameRaw = body.name;
     const maxGuestsRaw = body.number_of_guests;
+    const typeRaw = body.type;
+    const invitationSideRaw = body.invitation_side;
     const adminNoteRaw = body.admin_note;
 
     if (typeof nameRaw !== "string" || !nameRaw.trim()) {
@@ -19,6 +21,8 @@ export async function adminCreateTeapai(body: unknown) {
 
     const name = sanitizeText(nameRaw, 150);
     const numberOfGuests = parseInteger(maxGuestsRaw);
+    const type = (typeRaw === "PUBLIC" || typeRaw === "FAMILY") ? typeRaw : "FAMILY";
+    const invitation_side = (invitationSideRaw === "GROOM" || invitationSideRaw === "BRIDE") ? invitationSideRaw : "GROOM";
 
     if (numberOfGuests === null || numberOfGuests <= 0) {
         throw Object.assign(new Error("number_of_guests must be > 0"), { status: 400 });
@@ -30,6 +34,8 @@ export async function adminCreateTeapai(body: unknown) {
             urlToken,
             name,
             numberOfGuests,
+            type,
+            invitation_side,
             adminNote: typeof adminNoteRaw === "string" ? sanitizeText(adminNoteRaw, 255) : undefined,
             createdBy: "superadmin"
         });
@@ -41,6 +47,8 @@ export async function adminCreateTeapai(body: unknown) {
                 urlToken,
                 name,
                 numberOfGuests,
+                type,
+                invitation_side,
                 adminNote: typeof adminNoteRaw === "string" ? sanitizeText(adminNoteRaw, 255) : undefined,
                 createdBy: "superadmin"
             });
@@ -83,7 +91,7 @@ export async function guestUpdateTeapai(token: string, body: unknown, ip?: strin
         throw Object.assign(new Error("Expected attendance must be at least 1"), { status: 400 });
     }
 
-    if (teapai !== "pagi" && teapai !== "malam") {
+    if (teapai !== undefined && teapai !== null && teapai !== "pagi" && teapai !== "malam") {
         throw Object.assign(new Error("Session must be pagi or malam"), { status: 400 });
     }
 
@@ -91,7 +99,7 @@ export async function guestUpdateTeapai(token: string, body: unknown, ip?: strin
         display_name: sanitizeText(display_name, 150),
         expected_attendance: expectedNum,
         is_attending: isAttendingNum,
-        teapai: teapai as "pagi" | "malam",
+        teapai: (teapai as "pagi" | "malam") || null,
         submitted_ip: ip,
         user_agent: ua
     });
@@ -105,4 +113,44 @@ export async function guestUpdateTeapai(token: string, body: unknown, ip?: strin
 
 export async function adminListTeapai() {
     return await teapaiService.listTeapaiInvitations();
+}
+
+export async function adminImportTeapai(rows: any[]) {
+    let successCount = 0;
+    let failCount = 0;
+    const errors: string[] = [];
+
+    for (const row of rows) {
+        try {
+            const nameRaw = row.name || row.Name;
+            const maxGuestsRaw = row.max_guests || row["Max Guests"] || row.number_of_guests;
+            const typeRaw = (row.type || row.Type || "FAMILY").toUpperCase();
+            const sideRaw = (row.invitation_side || row.Side || row["Invitation Side"] || "GROOM").toUpperCase();
+            const adminNoteRaw = row.admin_note || row.Note || "";
+
+            if (!nameRaw) continue;
+
+            const name = sanitizeText(String(nameRaw), 150);
+            const numberOfGuests = parseInteger(maxGuestsRaw) || 1;
+            const type = (typeRaw === "PUBLIC" || typeRaw === "FAMILY") ? typeRaw : "FAMILY";
+            const invitation_side = (sideRaw === "GROOM" || sideRaw === "BRIDE") ? sideRaw : "GROOM";
+
+            const urlToken = generateUrlToken();
+            await teapaiService.createTeapaiInvitation({
+                urlToken,
+                name,
+                numberOfGuests,
+                type,
+                invitation_side,
+                adminNote: adminNoteRaw ? sanitizeText(String(adminNoteRaw), 255) : undefined,
+                createdBy: "import"
+            });
+            successCount++;
+        } catch (err: any) {
+            failCount++;
+            errors.push(`Row ${successCount + failCount}: ${err.message}`);
+        }
+    }
+
+    return { successCount, failCount, errors };
 }

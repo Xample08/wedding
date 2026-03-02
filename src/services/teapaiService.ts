@@ -8,6 +8,8 @@ export interface TeapaiRecord extends RowDataPacket {
     name: string;
     display_name: string | null;
     number_of_guests: number;
+    type: 'FAMILY' | 'PUBLIC';
+    invitation_side: 'GROOM' | 'BRIDE';
     expected_attendance: number | null;
     actual_attendance: number | null;
     attended_by: string | null;
@@ -28,16 +30,20 @@ export async function createTeapaiInvitation(data: {
     urlToken: string;
     name: string;
     numberOfGuests: number;
+    type: 'FAMILY' | 'PUBLIC';
+    invitation_side: 'GROOM' | 'BRIDE';
     adminNote?: string;
     createdBy?: string;
 }): Promise<void> {
     await pool.execute(
-        `INSERT INTO teapai (url_token, name, number_of_guests, admin_note, created_by) 
-         VALUES (?, ?, ?, ?, ?)`,
+        `INSERT INTO teapai (url_token, name, number_of_guests, type, invitation_side, admin_note, created_by) 
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
             data.urlToken,
             data.name,
             data.numberOfGuests,
+            data.type,
+            data.invitation_side,
             data.adminNote || null,
             data.createdBy || "admin",
         ]
@@ -58,7 +64,7 @@ export async function updateTeapaiResponse(
         display_name: string;
         expected_attendance: number;
         is_attending: number;
-        teapai: "pagi" | "malam";
+        teapai: "pagi" | "malam" | null;
         submitted_ip?: string;
         user_agent?: string;
     }

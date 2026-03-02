@@ -9,10 +9,84 @@ type TeapaiData = {
     name: string;
     display_name: string | null;
     number_of_guests: number;
+    type: 'FAMILY' | 'PUBLIC';
     expected_attendance: number | null;
     is_attending: number | null;
     teapai: "pagi" | "malam" | null;
     responded_at: string | null;
+};
+
+type Language = 'ID' | 'EN';
+
+const CONTENT = {
+    FAMILY: {
+        EN: {
+            title: "Engagement of \n Obe & Felicia",
+            sub_title: "Engagement Invitation",
+            welcome_message: "Dear {name}",
+            question_message: "Will you attend?",
+            field_1: "Name",
+            field_2: "No of Guest",
+            confirm: "Confirm Response",
+            attending_yes: "Yes, I'll be there",
+            attending_no: "Cannot attend",
+            thank_you: "Thank You!",
+            success_msg_yes: "We look forward to seeing you at the ceremony.",
+            success_msg_no: "We've received your response. We'll miss you!",
+            change_response: "Need to change your response?",
+            entry_ticket: "Entry Ticket"
+        },
+        ID: {
+            title: "Engagement of \n Obe & Felicia",
+            sub_title: "Undangan Pertunangan",
+            welcome_message: "Kepada {name}",
+            question_message: "Apakah Anda akan hadir?",
+            field_1: "Nama",
+            field_2: "Jumlah Tamu",
+            confirm: "Konfirmasi Kehadiran",
+            attending_yes: "Ya, saya akan hadir",
+            attending_no: "Tidak bisa hadir",
+            thank_you: "Terima Kasih!",
+            success_msg_yes: "Kami menantikan kehadiran Anda di acara tersebut.",
+            success_msg_no: "Kami telah menerima respons Anda. Kami akan merindukan Anda!",
+            change_response: "Perlu mengubah respons Anda?",
+            entry_ticket: "Tiket Masuk"
+        }
+    },
+    PUBLIC: {
+        EN: {
+            title: "Ucapan Syukur \n Obe & Felicia",
+            sub_title: "Invitation",
+            welcome_message: "To \n {name}",
+            question_message: "Confirm Attendance",
+            field_1: "Name",
+            field_2: "Number of Guests Attending",
+            confirm: "Confirm",
+            attending_yes: "I will attend",
+            attending_no: "I cannot attend",
+            thank_you: "Thank You!",
+            success_msg_yes: "Thank you for your confirmation.",
+            success_msg_no: "Thank you for letting us know.",
+            change_response: "Need to change your response?",
+            entry_ticket: "Entry Ticket"
+        },
+        ID: {
+            title: "Ucapan Syukur \n Obe & Felicia",
+            sub_title: "Undangan",
+            welcome_message: "Kepada \n {name}",
+            question_message: "Konfirmasi kehadiran",
+            field_1: "Nama",
+            field_2: "Jumlah Tamu Hadir",
+            confirm: "Konfirmasi",
+            attending_yes: "Saya akan hadir",
+            attending_no: "Saya tidak hadir",
+            thank_you: "Terima Kasih!",
+            success_msg_yes: "Terima kasih atas konfirmasi Anda.",
+            success_msg_no: "Terima kasih telah memberi tahu kami.",
+            change_response: "Perlu mengubah respons Anda?",
+            entry_ticket: "Tiket Masuk"
+        }
+    }
 };
 
 export default function TeapaiGuestPage({ params }: { params: Promise<{ token: string }> }) {
@@ -26,7 +100,7 @@ export default function TeapaiGuestPage({ params }: { params: Promise<{ token: s
     const [isAttending, setIsAttending] = useState<boolean | null>(null);
     const [displayName, setDisplayName] = useState("");
     const [expectedAttendance, setExpectedAttendance] = useState(1);
-    const [session, setSession] = useState<"pagi" | "malam">("pagi");
+    const [lang, setLang] = useState<Language>('ID');
     const [submitting, setSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
 
@@ -36,11 +110,14 @@ export default function TeapaiGuestPage({ params }: { params: Promise<{ token: s
             const json = await res.json();
             if (res.ok) {
                 setData(json);
+                // Set default language based on type
+                if (json.is_attending === null) {
+                    setLang(json.type === 'FAMILY' ? 'EN' : 'ID');
+                }
                 if (json.is_attending !== null) {
                     setIsAttending(json.is_attending === 1);
                     setDisplayName(json.display_name || json.name);
                     setExpectedAttendance(json.expected_attendance || 0);
-                    setSession(json.teapai || "pagi");
                     if (json.responded_at) {
                         setSubmitted(true);
                         const url = await QRCode.toDataURL(token, { width: 300, margin: 2 });
@@ -73,7 +150,7 @@ export default function TeapaiGuestPage({ params }: { params: Promise<{ token: s
                     display_name: displayName,
                     expected_attendance: isAttending ? expectedAttendance : 0,
                     is_attending: isAttending ? 1 : 0,
-                    teapai: session
+                    teapai: null
                 }),
             });
             if (res.ok) {
@@ -108,10 +185,37 @@ export default function TeapaiGuestPage({ params }: { params: Promise<{ token: s
         </div>
     );
 
+    const type = data.type || 'FAMILY';
+    const content = CONTENT[type][lang];
+
     return (
         <div className="fixed inset-0 w-full h-full bg-slate-900 flex items-center justify-center font-serif overflow-hidden overscroll-none touch-pan-y">
-            {/* Mobile-centric Frame */}
             <main className="relative h-full w-full max-w-[435px] bg-[#fdfaf1] shadow-2xl overflow-hidden font-serif">
+                {/* Language Switcher */}
+                <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50">
+                    <div className="bg-white/40 backdrop-blur-md border border-white/20 p-1 rounded-full flex gap-1 shadow-lg scale-90">
+                        <button 
+                            onClick={() => setLang('ID')}
+                            className={`px-4 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all ${
+                                lang === 'ID' 
+                                    ? "bg-[#b4352a] text-white shadow-md" 
+                                    : "text-slate-600 hover:bg-white/20"
+                            }`}
+                        >
+                            ID
+                        </button>
+                        <button 
+                            onClick={() => setLang('EN')}
+                            className={`px-4 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all ${
+                                lang === 'EN' 
+                                    ? "bg-[#b4352a] text-white shadow-md" 
+                                    : "text-slate-600 hover:bg-white/20"
+                            }`}
+                        >
+                            EN
+                        </button>
+                    </div>
+                </div>
                 {/* Background Images with smooth transition */}
                 <div className="absolute inset-0 z-0">
                     <AnimatePresence mode="wait">
@@ -152,19 +256,19 @@ export default function TeapaiGuestPage({ params }: { params: Promise<{ token: s
                                 exit={{ opacity: 0, scale: 0.95 }}
                                 className="bg-transparent py-8 px-4 overflow-hidden"
                             >
-                                <div className="text-center mb-8">
-                                    <h1 className="text-3xl font-bold text-[#b4352a] mb-2">Teapai Ceremony</h1>
-                                    <p className="text-slate-500 italic">Teapai Invitation</p>
-                                    <div className="mt-4 text-xl font-medium text-slate-800">
-                                        Dear {data.name},
+                                <div className="text-center mb-6">
+                                    <h1 className="text-2xl font-bold text-[#b4352a] mb-1 whitespace-pre-line leading-tight">{content.title}</h1>
+                                    <p className="text-slate-500 italic text-xs tracking-wide">{content.sub_title}</p>
+                                    <div className="mt-4 text-lg font-medium text-slate-800 whitespace-pre-line leading-snug">
+                                        {content.welcome_message.replace('{name}', data.name)}
                                     </div>
                                 </div>
 
                             {/* Step 1: Attendance Check */}
                             <div className="space-y-6">
                                 <div>
-                                    <label className="block text-center text-lg font-medium text-slate-700 mb-4">
-                                        Will you attend the Teapai Ceremony?
+                                    <label className="block text-center text-base font-medium text-slate-700 mb-3">
+                                        {content.question_message}
                                     </label>
                                     <div className="flex gap-4">
                                         <button
@@ -175,7 +279,7 @@ export default function TeapaiGuestPage({ params }: { params: Promise<{ token: s
                                                     : "bg-white border-red-100 text-[#b4352a] hover:bg-red-50"
                                             }`}
                                         >
-                                            Yes, I'll be there
+                                            {content.attending_yes}
                                         </button>
                                         <button
                                             onClick={() => setIsAttending(false)}
@@ -185,7 +289,7 @@ export default function TeapaiGuestPage({ params }: { params: Promise<{ token: s
                                                     : "bg-white/20 border-slate-300 text-slate-600 hover:bg-white/30"
                                             }`}
                                         >
-                                            Cannot attend
+                                            {content.attending_no}
                                         </button>
                                     </div>
                                 </div>
@@ -200,60 +304,37 @@ export default function TeapaiGuestPage({ params }: { params: Promise<{ token: s
                                             className="space-y-4 overflow-hidden pt-4 px-1 border-t border-red-50"
                                         >
                                             <div>
-                                                <label className="block text-sm font-medium text-slate-600 mb-1">Name</label>
+                                                <label className="block text-sm font-medium text-slate-600 mb-1">{content.field_1}</label>
                                                 <input
                                                     type="text"
                                                     value={displayName}
                                                     onChange={(e) => setDisplayName(e.target.value)}
                                                     className="w-full px-4 py-3 rounded-xl border border-red-200 bg-white/10 backdrop-blur-sm focus:ring-2 focus:ring-[#b4352a] outline-none text-black placeholder:text-black/50"
-                                                    placeholder="Who is attending?"
+                                                    placeholder={content.field_1}
                                                 />
                                             </div>
 
                                             <div>
                                                 <label className="block text-sm font-medium text-slate-600 mb-1">
-                                                    Expected Attendance (Max: {data.number_of_guests})
+                                                    {content.field_2} (Max: {data.number_of_guests})
                                                 </label>
-                                                <input
-                                                    type="number"
-                                                    min={1}
-                                                    max={data.number_of_guests}
-                                                    value={expectedAttendance}
-                                                    onChange={(e) => setExpectedAttendance(Math.min(data.number_of_guests, parseInt(e.target.value) || 1))}
-                                                    className="w-full px-4 py-3 rounded-xl border border-red-200 bg-white/10 backdrop-blur-sm focus:ring-2 focus:ring-[#b4352a] outline-none text-black"
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-sm font-medium text-slate-600 mb-2 px-1">Preferred Session</label>
-                                                <div className="flex gap-3">
+                                                <div className="flex items-center gap-4">
                                                     <button
                                                         type="button"
-                                                        onClick={() => setSession("pagi")}
-                                                        className={`flex-1 py-3 px-4 rounded-xl border transition-all text-sm font-semibold flex items-center justify-center gap-2 ${
-                                                            session === "pagi"
-                                                                ? "bg-[#b4352a] border-[#b4352a] text-white shadow-md shadow-red-100"
-                                                                : "bg-white/10 border-red-200 text-[#b4352a] backdrop-blur-sm hover:bg-white/20"
-                                                        }`}
+                                                        onClick={() => setExpectedAttendance(Math.max(1, expectedAttendance - 1))}
+                                                        className="w-12 h-12 flex items-center justify-center rounded-xl border-2 border-[#b4352a] text-[#b4352a] font-bold text-2xl hover:bg-red-50 active:scale-95 transition-all"
                                                     >
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707m12.728 12.728L5.122 5.122" />
-                                                        </svg>
-                                                        Morning
+                                                        -
                                                     </button>
+                                                    <div className="flex-1 bg-white/40 backdrop-blur-sm border border-red-100 rounded-xl py-3 text-center text-xl font-bold text-slate-800">
+                                                        {expectedAttendance}
+                                                    </div>
                                                     <button
                                                         type="button"
-                                                        onClick={() => setSession("malam")}
-                                                        className={`flex-1 py-3 px-4 rounded-xl border transition-all text-sm font-semibold flex items-center justify-center gap-2 ${
-                                                            session === "malam"
-                                                                ? "bg-[#b4352a] border-[#b4352a] text-white shadow-md shadow-red-100"
-                                                                : "bg-white/10 border-red-200 text-[#b4352a] backdrop-blur-sm hover:bg-white/20"
-                                                        }`}
+                                                        onClick={() => setExpectedAttendance(Math.min(data.number_of_guests, expectedAttendance + 1))}
+                                                        className="w-12 h-12 flex items-center justify-center rounded-xl border-2 border-[#b4352a] text-[#b4352a] font-bold text-2xl hover:bg-red-50 active:scale-95 transition-all"
                                                     >
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                                                        </svg>
-                                                        Evening
+                                                        +
                                                     </button>
                                                 </div>
                                             </div>
@@ -271,11 +352,16 @@ export default function TeapaiGuestPage({ params }: { params: Promise<{ token: s
                                         {submitting ? (
                                             <span className="flex items-center justify-center gap-2">
                                                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                                                Sending...
+                                                {lang === 'ID' ? 'Mengirim...' : 'Sending...'}
                                             </span>
-                                        ) : "Confirm Response"}
+                                        ) : content.confirm}
                                     </button>
                                 )}
+                             <div className="mt-12 text-center">
+                                <p className="text-[10px] text-slate-400 font-sans tracking-widest uppercase opacity-60">
+                                    Created by Christopher Octave Sinjaya
+                                </p>
+                             </div>
                             </div>
                         </motion.div>
                     ) : (
@@ -291,11 +377,11 @@ export default function TeapaiGuestPage({ params }: { params: Promise<{ token: s
                                 </svg>
                             </div>
 
-                            <h2 className="text-2xl font-bold text-slate-800 mb-2">Thank You!</h2>
+                             <h2 className="text-2xl font-bold text-slate-800 mb-2">{content.thank_you}</h2>
                             <p className="text-slate-500 mb-8">
                                 {isAttending 
-                                    ? "We look forward to seeing you at the ceremony."
-                                    : "We've received your response. We'll miss you!"}
+                                    ? content.success_msg_yes
+                                    : content.success_msg_no}
                             </p>
 
                             {isAttending && qrCodeUrl && (
@@ -310,7 +396,7 @@ export default function TeapaiGuestPage({ params }: { params: Promise<{ token: s
                                         />
                                     </div>
                                     <p className="text-xs text-slate-400 font-mono uppercase tracking-widest">
-                                        Entry Ticket: {token.substring(0, 8)}
+                                        {content.entry_ticket}: {token.substring(0, 8)}
                                     </p>
                                 </div>
                             )}
@@ -319,8 +405,13 @@ export default function TeapaiGuestPage({ params }: { params: Promise<{ token: s
                                 onClick={() => setSubmitted(false)}
                                 className="text-[#b4352a] font-medium hover:underline text-sm"
                             >
-                                Need to change your response?
+                                {content.change_response}
                             </button>
+                             <div className="mt-12 text-center pb-4">
+                                <p className="text-[10px] text-slate-400 font-sans tracking-widest uppercase opacity-60">
+                                    Created by Christopher Octave Sinjaya
+                                </p>
+                             </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
