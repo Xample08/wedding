@@ -8,8 +8,8 @@ type TeapaiInvitation = {
     url_token: string;
     name: string;
     number_of_guests: number;
-    type: 'FAMILY' | 'PUBLIC';
-    invitation_side: 'GROOM' | 'BRIDE';
+    type: "FAMILY" | "PUBLIC";
+    invitation_side: "GROOM" | "BRIDE";
     admin_note: string | null;
     created_at: string;
     is_attending: number | null;
@@ -25,12 +25,25 @@ export default function TeapaiAdminPage() {
     // Form state
     const [name, setName] = useState("");
     const [maxGuests, setMaxGuests] = useState(1);
-    const [type, setType] = useState<'FAMILY' | 'PUBLIC'>('FAMILY');
-    const [invitationSide, setInvitationSide] = useState<'GROOM' | 'BRIDE'>('GROOM');
+    const [type, setType] = useState<"FAMILY" | "PUBLIC">("FAMILY");
+    const [invitationSide, setInvitationSide] = useState<"GROOM" | "BRIDE">(
+        "GROOM",
+    );
     const [adminNote, setAdminNote] = useState("");
     const [submitting, setSubmitting] = useState(false);
     const [importing, setImporting] = useState(false);
     const [createdToken, setCreatedToken] = useState<string | null>(null);
+
+    // Edit modal state
+    const [editingToken, setEditingToken] = useState<string | null>(null);
+    const [editName, setEditName] = useState("");
+    const [editMaxGuests, setEditMaxGuests] = useState(1);
+    const [editType, setEditType] = useState<"FAMILY" | "PUBLIC">("FAMILY");
+    const [editInvitationSide, setEditInvitationSide] = useState<
+        "GROOM" | "BRIDE"
+    >("GROOM");
+    const [editAdminNote, setEditAdminNote] = useState("");
+    const [updating, setUpdating] = useState(false);
 
     const fetchInvitations = async () => {
         setLoading(true);
@@ -46,6 +59,69 @@ export default function TeapaiAdminPage() {
             setError("Network error");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDelete = async (token: string, name: string) => {
+        if (
+            !confirm(
+                `Are you sure you want to delete the invitation for "${name}"?`,
+            )
+        ) {
+            return;
+        }
+        try {
+            const res = await fetch(`/api/teapai/${token}`, {
+                method: "DELETE",
+            });
+            const data = await res.json();
+            if (res.ok) {
+                await fetchInvitations();
+            } else {
+                alert(data.error || "Failed to delete invitation");
+            }
+        } catch (err) {
+            alert("Network error during delete");
+        }
+    };
+
+    const handleEdit = (row: TeapaiInvitation) => {
+        setEditingToken(row.url_token);
+        setEditName(row.name);
+        setEditMaxGuests(row.number_of_guests);
+        setEditType(row.type);
+        setEditInvitationSide(row.invitation_side);
+        setEditAdminNote(row.admin_note || "");
+    };
+
+    const handleUpdateSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingToken) return;
+
+        setUpdating(true);
+        try {
+            const res = await fetch(`/api/teapai/${editingToken}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: editName,
+                    number_of_guests: editMaxGuests,
+                    type: editType,
+                    invitation_side: editInvitationSide,
+                    admin_note: editAdminNote,
+                }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setEditingToken(null);
+                await fetchInvitations();
+            } else {
+                alert(data.error || "Failed to update invitation");
+            }
+        } catch (err) {
+            alert("Network error during update");
+        } finally {
+            setUpdating(false);
         }
     };
 
@@ -68,15 +144,15 @@ export default function TeapaiAdminPage() {
                     number_of_guests: maxGuests,
                     type,
                     invitation_side: invitationSide,
-                    admin_note: adminNote
+                    admin_note: adminNote,
                 }),
             });
             const data = await res.json();
             if (res.ok) {
                 setName("");
                 setMaxGuests(1);
-                setType('FAMILY');
-                setInvitationSide('GROOM');
+                setType("FAMILY");
+                setInvitationSide("GROOM");
                 setAdminNote("");
                 setCreatedToken(data.url_token);
                 await fetchInvitations();
@@ -94,7 +170,9 @@ export default function TeapaiAdminPage() {
         window.open("/api/teapai/template", "_blank");
     };
 
-    const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImportExcel = async (
+        e: React.ChangeEvent<HTMLInputElement>,
+    ) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
@@ -111,7 +189,9 @@ export default function TeapaiAdminPage() {
             });
             const data = await res.json();
             if (res.ok) {
-                alert(`Imported successfully: ${data.successCount} success, ${data.failCount} failed.`);
+                alert(
+                    `Imported successfully: ${data.successCount} success, ${data.failCount} failed.`,
+                );
                 await fetchInvitations();
             } else {
                 setError(data.error || "Import failed");
@@ -133,7 +213,7 @@ export default function TeapaiAdminPage() {
                             Superadmin Dashboard
                         </h1>
                         <p className="mt-2 text-slate-600">
-                            Teapai ceremony master data
+                            Engagement ceremony master data
                         </p>
                     </div>
 
@@ -146,7 +226,7 @@ export default function TeapaiAdminPage() {
                                     : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                             }`}
                         >
-                            RSVP Invitations
+                            Wedding Invitations
                         </Link>
                         <Link
                             href="/superadmin/teapai"
@@ -156,7 +236,7 @@ export default function TeapaiAdminPage() {
                                     : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                             }`}
                         >
-                            Teapai Master
+                            Engagement Master
                         </Link>
                         <Link
                             href="/superadmin/report/teapai"
@@ -166,7 +246,7 @@ export default function TeapaiAdminPage() {
                                     : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                             }`}
                         >
-                            Wedding Analytics
+                            Engagement Analytics
                         </Link>
                     </nav>
                 </div>
@@ -177,26 +257,59 @@ export default function TeapaiAdminPage() {
                         onClick={handleDownloadTemplate}
                         className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all shadow-sm"
                     >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                            />
                         </svg>
                         Download Excel Template
                     </button>
                     <label className="flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg text-sm font-medium text-blue-700 hover:bg-blue-100 transition-all shadow-sm cursor-pointer">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+                            />
                         </svg>
                         {importing ? "Importing..." : "Import from Excel"}
-                        <input type="file" accept=".xlsx, .xls" onChange={handleImportExcel} className="hidden" disabled={importing} />
+                        <input
+                            type="file"
+                            accept=".xlsx, .xls"
+                            onChange={handleImportExcel}
+                            className="hidden"
+                            disabled={importing}
+                        />
                     </label>
                 </div>
 
                 {/* Create Form */}
                 <div className="bg-white rounded-xl shadow-md p-6 mb-8 border border-slate-200">
-                    <h2 className="text-xl font-semibold mb-4 text-slate-800">Create New Teapai Invitation</h2>
-                    <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <h2 className="text-xl font-semibold mb-4 text-slate-800">
+                        Create New Teapai Invitation
+                    </h2>
+                    <form
+                        onSubmit={handleSubmit}
+                        className="grid grid-cols-1 md:grid-cols-3 gap-4"
+                    >
                         <div className="md:col-span-1">
-                            <label className="block text-sm font-medium text-slate-700 mb-1">Guest/Family Name</label>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">
+                                Guest/Family Name
+                            </label>
                             <input
                                 type="text"
                                 value={name}
@@ -207,21 +320,31 @@ export default function TeapaiAdminPage() {
                             />
                         </div>
                         <div className="md:col-span-1">
-                            <label className="block text-sm font-medium text-slate-700 mb-1">Max Guests Allowed</label>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">
+                                Max Guests Allowed
+                            </label>
                             <input
                                 type="number"
                                 min={1}
                                 value={maxGuests}
-                                onChange={(e) => setMaxGuests(parseInt(e.target.value))}
+                                onChange={(e) =>
+                                    setMaxGuests(parseInt(e.target.value))
+                                }
                                 className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none text-black"
                                 required
                             />
                         </div>
                         <div className="md:col-span-1">
-                            <label className="block text-sm font-medium text-slate-700 mb-1">Invitation Type</label>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">
+                                Invitation Type
+                            </label>
                             <select
                                 value={type}
-                                onChange={(e) => setType(e.target.value as 'FAMILY' | 'PUBLIC')}
+                                onChange={(e) =>
+                                    setType(
+                                        e.target.value as "FAMILY" | "PUBLIC",
+                                    )
+                                }
                                 className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none text-black bg-white"
                                 required
                             >
@@ -230,10 +353,16 @@ export default function TeapaiAdminPage() {
                             </select>
                         </div>
                         <div className="md:col-span-1">
-                            <label className="block text-sm font-medium text-slate-700 mb-1">Invitation Side</label>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">
+                                Invitation Side
+                            </label>
                             <select
                                 value={invitationSide}
-                                onChange={(e) => setInvitationSide(e.target.value as 'GROOM' | 'BRIDE')}
+                                onChange={(e) =>
+                                    setInvitationSide(
+                                        e.target.value as "GROOM" | "BRIDE",
+                                    )
+                                }
                                 className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none text-black bg-white"
                                 required
                             >
@@ -242,7 +371,9 @@ export default function TeapaiAdminPage() {
                             </select>
                         </div>
                         <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-slate-700 mb-1">Admin Note (Internal)</label>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">
+                                Admin Note (Internal)
+                            </label>
                             <input
                                 type="text"
                                 value={adminNote}
@@ -257,20 +388,29 @@ export default function TeapaiAdminPage() {
                                 disabled={submitting}
                                 className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:bg-slate-400 transition-colors"
                             >
-                                {submitting ? "Creating..." : "Create Invitation"}
+                                {submitting
+                                    ? "Creating..."
+                                    : "Create Invitation"}
                             </button>
                         </div>
                     </form>
 
                     {createdToken && (
                         <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-md">
-                            <p className="text-green-800 font-medium">Invitation created successfully!</p>
+                            <p className="text-green-800 font-medium">
+                                Invitation created successfully!
+                            </p>
                             <div className="flex items-center gap-2 mt-2">
                                 <code className="bg-white p-2 rounded border border-green-300 flex-1 break-all text-black">
-                                    {window.location.origin}/teapai/{createdToken}
+                                    {window.location.origin}/teapai/
+                                    {createdToken}
                                 </code>
                                 <button
-                                    onClick={() => navigator.clipboard.writeText(`${window.location.origin}/teapai/${createdToken}`)}
+                                    onClick={() =>
+                                        navigator.clipboard.writeText(
+                                            `${window.location.origin}/teapai/${createdToken}`,
+                                        )
+                                    }
                                     className="p-2 bg-green-600 text-white rounded hover:bg-green-700"
                                 >
                                     Copy Link
@@ -286,65 +426,153 @@ export default function TeapaiAdminPage() {
                         <table className="min-w-full divide-y divide-slate-200">
                             <thead className="bg-slate-50">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Name</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Side</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Type</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Max Guests</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Expected</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Token</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                        Name
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                        Side
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                        Type
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                        Max Guests
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                        Status
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                        RSVP
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                        Admin Note
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                        Token
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                        Actions
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-slate-200">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={6} className="px-6 py-4 text-center text-slate-500">Loading invitations...</td>
+                                        <td
+                                            colSpan={9}
+                                            className="px-6 py-4 text-center text-slate-500"
+                                        >
+                                            Loading invitations...
+                                        </td>
                                     </tr>
                                 ) : rows.length === 0 ? (
                                     <tr>
-                                        <td colSpan={6} className="px-6 py-4 text-center text-slate-500">No invitations found.</td>
+                                        <td
+                                            colSpan={9}
+                                            className="px-6 py-4 text-center text-slate-500"
+                                        >
+                                            No invitations found.
+                                        </td>
                                     </tr>
                                 ) : (
                                     rows.map((row) => (
-                                        <tr key={row.url_token} className="hover:bg-slate-50">
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{row.name}</td>
+                                        <tr
+                                            key={row.url_token}
+                                            className="hover:bg-slate-50"
+                                        >
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                                                {row.name}
+                                            </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                                    row.invitation_side === 'GROOM' ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800'
-                                                }`}>
+                                                <span
+                                                    className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                                        row.invitation_side ===
+                                                        "GROOM"
+                                                            ? "bg-blue-100 text-blue-800"
+                                                            : "bg-pink-100 text-pink-800"
+                                                    }`}
+                                                >
                                                     {row.invitation_side}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                                    row.type === 'FAMILY' ? 'bg-purple-100 text-purple-800' : 'bg-slate-100 text-slate-800'
-                                                }`}>
+                                                <span
+                                                    className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                                        row.type === "FAMILY"
+                                                            ? "bg-purple-100 text-purple-800"
+                                                            : "bg-slate-100 text-slate-800"
+                                                    }`}
+                                                >
                                                     {row.type}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{row.number_of_guests}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                                                {row.number_of_guests}
+                                            </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                                                 {row.is_attending === 1 ? (
-                                                    <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">Attending</span>
+                                                    <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
+                                                        Attending
+                                                    </span>
                                                 ) : row.is_attending === 0 ? (
-                                                    <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">Declined</span>
+                                                    <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">
+                                                        Declined
+                                                    </span>
                                                 ) : (
-                                                    <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">Pending</span>
+                                                    <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">
+                                                        Pending
+                                                    </span>
                                                 )}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{row.expected_attendance || "-"}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-slate-400">{row.url_token.substring(0, 8)}...</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                                                {row.expected_attendance || "-"}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-slate-500 max-w-xs truncate">
+                                                {row.admin_note || "-"}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-slate-400">
+                                                {row.url_token.substring(0, 8)}
+                                                ...
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm">
                                                 <button
-                                                    onClick={() => navigator.clipboard.writeText(`${window.location.origin}/teapai/${row.url_token}`)}
-                                                    className="hover:underline mr-4"
+                                                    onClick={() =>
+                                                        navigator.clipboard.writeText(
+                                                            `${window.location.origin}/teapai/${row.url_token}`,
+                                                        )
+                                                    }
+                                                    className="text-blue-600 hover:underline mr-3"
                                                 >
                                                     Copy Link
                                                 </button>
-                                                <Link href={`/teapai/${row.url_token}`} target="_blank" className="hover:underline">
+                                                <Link
+                                                    href={`/teapai/${row.url_token}`}
+                                                    target="_blank"
+                                                    className="text-blue-600 hover:underline mr-3"
+                                                >
                                                     View
                                                 </Link>
+                                                {row.is_attending === null && (
+                                                    <button
+                                                        onClick={() =>
+                                                            handleEdit(row)
+                                                        }
+                                                        className="text-green-600 hover:underline mr-3"
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                )}
+                                                <button
+                                                    onClick={() =>
+                                                        handleDelete(
+                                                            row.url_token,
+                                                            row.name,
+                                                        )
+                                                    }
+                                                    className="text-red-600 hover:underline"
+                                                >
+                                                    Delete
+                                                </button>
                                             </td>
                                         </tr>
                                     ))
@@ -357,6 +585,130 @@ export default function TeapaiAdminPage() {
                 {error && (
                     <div className="mt-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-md">
                         {error}
+                    </div>
+                )}
+
+                {/* Edit Modal */}
+                {editingToken && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                            <div className="p-6 border-b border-slate-200">
+                                <h2 className="text-2xl font-semibold text-slate-800">
+                                    Edit Invitation
+                                </h2>
+                            </div>
+                            <form onSubmit={handleUpdateSubmit} className="p-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">
+                                            Guest/Family Name
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={editName}
+                                            onChange={(e) =>
+                                                setEditName(e.target.value)
+                                            }
+                                            className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none text-black"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">
+                                            Max Guests Allowed
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min={1}
+                                            value={editMaxGuests}
+                                            onChange={(e) =>
+                                                setEditMaxGuests(
+                                                    parseInt(e.target.value),
+                                                )
+                                            }
+                                            className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none text-black"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">
+                                            Invitation Type
+                                        </label>
+                                        <select
+                                            value={editType}
+                                            onChange={(e) =>
+                                                setEditType(
+                                                    e.target.value as
+                                                        | "FAMILY"
+                                                        | "PUBLIC",
+                                                )
+                                            }
+                                            className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none text-black bg-white"
+                                            required
+                                        >
+                                            <option value="FAMILY">
+                                                Family
+                                            </option>
+                                            <option value="PUBLIC">
+                                                Public
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">
+                                            Invitation Side
+                                        </label>
+                                        <select
+                                            value={editInvitationSide}
+                                            onChange={(e) =>
+                                                setEditInvitationSide(
+                                                    e.target.value as
+                                                        | "GROOM"
+                                                        | "BRIDE",
+                                                )
+                                            }
+                                            className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none text-black bg-white"
+                                            required
+                                        >
+                                            <option value="GROOM">Groom</option>
+                                            <option value="BRIDE">Bride</option>
+                                        </select>
+                                    </div>
+                                    <div className="md:col-span-2">
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">
+                                            Admin Note (Internal)
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={editAdminNote}
+                                            onChange={(e) =>
+                                                setEditAdminNote(e.target.value)
+                                            }
+                                            className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none text-black"
+                                            placeholder="Optional notes"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex gap-3 mt-6">
+                                    <button
+                                        type="submit"
+                                        disabled={updating}
+                                        className="flex-1 bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:bg-slate-400 transition-colors"
+                                    >
+                                        {updating
+                                            ? "Updating..."
+                                            : "Update Invitation"}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setEditingToken(null)}
+                                        className="px-6 py-2 border border-slate-300 text-slate-700 rounded-md hover:bg-slate-50 transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 )}
             </div>

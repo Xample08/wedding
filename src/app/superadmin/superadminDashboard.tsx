@@ -310,7 +310,7 @@ export function SuperadminDashboard() {
                                     : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                             }`}
                         >
-                            RSVP Invitations
+                            Wedding Invitations
                         </Link>
                         <Link
                             href="/superadmin/teapai"
@@ -320,7 +320,7 @@ export function SuperadminDashboard() {
                                     : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                             }`}
                         >
-                            Teapai Master
+                            Engagement Master
                         </Link>
                         <Link
                             href="/superadmin/report/teapai"
@@ -330,7 +330,7 @@ export function SuperadminDashboard() {
                                     : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                             }`}
                         >
-                            Wedding Analytics
+                            Engagement Analytics
                         </Link>
                     </nav>
                 </div>

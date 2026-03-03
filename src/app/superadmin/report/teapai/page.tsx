@@ -120,7 +120,14 @@ function SectionCard({
     title: string;
     subtitle: string;
     children: React.ReactNode;
-    accent?: "slate" | "blue" | "emerald" | "rose" | "violet" | "amber" | "cyan";
+    accent?:
+        | "slate"
+        | "blue"
+        | "emerald"
+        | "rose"
+        | "violet"
+        | "amber"
+        | "cyan";
 }) {
     const accentMap: Record<string, string> = {
         slate: "from-slate-600 to-slate-800 border-slate-200",
@@ -165,7 +172,9 @@ function StatCard({
     return (
         <div className={`rounded-xl border p-4 ${colorMap[color]}`}>
             <div className="text-2xl font-extrabold">{value ?? "—"}</div>
-            <div className="text-xs font-semibold mt-1 uppercase tracking-wide opacity-70">{label}</div>
+            <div className="text-xs font-semibold mt-1 uppercase tracking-wide opacity-70">
+                {label}
+            </div>
             {sub && <div className="text-xs mt-1 opacity-60">{sub}</div>}
         </div>
     );
@@ -185,19 +194,31 @@ function CssBar({
     const pct = max > 0 ? Math.round((value / max) * 100) : 0;
     return (
         <div className="flex items-center gap-3">
-            {label && <span className="text-xs text-slate-500 w-20 shrink-0 truncate">{label}</span>}
+            {label && (
+                <span className="text-xs text-slate-500 w-20 shrink-0 truncate">
+                    {label}
+                </span>
+            )}
             <div className="flex-1 bg-slate-100 rounded-full h-4 overflow-hidden">
                 <div
                     className="h-4 rounded-full transition-all duration-500"
                     style={{ width: `${pct}%`, backgroundColor: color }}
                 />
             </div>
-            <span className="text-xs font-semibold text-slate-700 w-10 text-right">{value}</span>
+            <span className="text-xs font-semibold text-slate-700 w-10 text-right">
+                {value}
+            </span>
         </div>
     );
 }
 
-function Badge({ value, type }: { value: string; type?: "side" | "type" | "status" }) {
+function Badge({
+    value,
+    type,
+}: {
+    value: string;
+    type?: "side" | "type" | "status";
+}) {
     const map: Record<string, string> = {
         GROOM: "bg-blue-100 text-blue-800",
         BRIDE: "bg-pink-100 text-pink-800",
@@ -208,7 +229,9 @@ function Badge({ value, type }: { value: string; type?: "side" | "type" | "statu
         Pending: "bg-amber-100 text-amber-800",
     };
     return (
-        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${map[value] ?? "bg-slate-100 text-slate-700"}`}>
+        <span
+            className={`px-2 py-0.5 rounded-full text-xs font-semibold ${map[value] ?? "bg-slate-100 text-slate-700"}`}
+        >
             {value}
         </span>
     );
@@ -252,7 +275,7 @@ export default function TeapaiReportPage() {
                     r.type.toLowerCase().includes(t)
                 );
             }),
-        [data?.pendingList, pendingSearch]
+        [data?.pendingList, pendingSearch],
     );
 
     const filteredNotes = useMemo(
@@ -266,39 +289,50 @@ export default function TeapaiReportPage() {
                     r.invitation_side.toLowerCase().includes(t)
                 );
             }),
-        [data?.adminNotes, notesSearch]
+        [data?.adminNotes, notesSearch],
     );
 
     // Timeline max
     const timelineMax = useMemo(
         () => Math.max(...(data?.timeline ?? []).map((r) => r.responses), 1),
-        [data?.timeline]
+        [data?.timeline],
     );
 
     const navLinks = [
-        { href: "/superadmin", label: "RSVP Invitations" },
-        { href: "/superadmin/teapai", label: "Teapai Master" },
-        { href: "/superadmin/report/teapai", label: "Wedding Analytics" },
+        { href: "/superadmin", label: "Wedding Invitations" },
+        { href: "/superadmin/teapai", label: "Engagement Master" },
+        { href: "/superadmin/report/teapai", label: "Engagement Analytics" },
     ];
 
     return (
         <div className="min-h-screen bg-slate-50 pb-16">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
                 {/* ── Header ── */}
                 <div className="mb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
                     <div>
                         <div className="flex items-center gap-3 mb-1">
                             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center">
-                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                <svg
+                                    className="w-4 h-4 text-white"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                                    />
                                 </svg>
                             </div>
                             <h1 className="text-3xl font-extrabold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-                                Wedding Analytics
+                                Engagement Analytics
                             </h1>
                         </div>
-                        <p className="text-slate-500 ml-11 text-sm">Teapai guest analytics &amp; insights</p>
+                        <p className="text-slate-500 ml-11 text-sm">
+                            Teapai guest analytics &amp; insights
+                        </p>
                     </div>
 
                     <nav className="flex items-center gap-1 bg-white p-1 rounded-2xl shadow-sm border border-slate-200 flex-wrap">
@@ -322,16 +356,19 @@ export default function TeapaiReportPage() {
                 {loading && (
                     <div className="flex flex-col items-center justify-center py-32 gap-4">
                         <div className="w-12 h-12 rounded-full border-4 border-slate-200 border-t-rose-500 animate-spin" />
-                        <p className="text-slate-500 text-sm">Loading analytics…</p>
+                        <p className="text-slate-500 text-sm">
+                            Loading analytics…
+                        </p>
                     </div>
                 )}
                 {error && (
-                    <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6 text-sm">{error}</div>
+                    <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6 text-sm">
+                        {error}
+                    </div>
                 )}
 
                 {data && (
                     <div className="space-y-8">
-
                         {/* ══════════════════════════════════════════
                             REPORT 1 — Overall RSVP Summary
                         ══════════════════════════════════════════ */}
@@ -343,12 +380,17 @@ export default function TeapaiReportPage() {
                             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                                 <StatCard
                                     label="Total Invitations"
-                                    value={data.rsvpSummary.total_invitations ?? 0}
+                                    value={
+                                        data.rsvpSummary.total_invitations ?? 0
+                                    }
                                     color="slate"
                                 />
                                 <StatCard
                                     label="Confirmed Attending"
-                                    value={data.rsvpSummary.confirmed_attending ?? 0}
+                                    value={
+                                        data.rsvpSummary.confirmed_attending ??
+                                        0
+                                    }
                                     color="green"
                                 />
                                 <StatCard
@@ -381,25 +423,35 @@ export default function TeapaiReportPage() {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <StatCard
                                     label="Total Expected"
-                                    value={data.attendanceSummary.total_expected ?? "—"}
+                                    value={
+                                        data.attendanceSummary.total_expected ??
+                                        "—"
+                                    }
                                     color="blue"
                                     sub="Based on RSVP responses"
                                 />
                                 <StatCard
                                     label="Total Actual"
-                                    value={data.attendanceSummary.total_actual ?? "—"}
+                                    value={
+                                        data.attendanceSummary.total_actual ??
+                                        "—"
+                                    }
                                     color="green"
                                     sub="Who actually attended"
                                 />
                                 <StatCard
                                     label="Difference"
-                                    value={data.attendanceSummary.difference ?? "—"}
+                                    value={
+                                        data.attendanceSummary.difference ?? "—"
+                                    }
                                     color={
-                                        (data.attendanceSummary.difference ?? 0) > 0
+                                        (data.attendanceSummary.difference ??
+                                            0) > 0
                                             ? "yellow"
-                                            : (data.attendanceSummary.difference ?? 0) < 0
-                                            ? "red"
-                                            : "slate"
+                                            : (data.attendanceSummary
+                                                    .difference ?? 0) < 0
+                                              ? "red"
+                                              : "slate"
                                     }
                                     sub="Expected minus actual"
                                 />
@@ -418,15 +470,40 @@ export default function TeapaiReportPage() {
                                 {data.bySide.map((row) => {
                                     const total = row.total_invitations;
                                     return (
-                                        <div key={row.invitation_side} className="space-y-2">
+                                        <div
+                                            key={row.invitation_side}
+                                            className="space-y-2"
+                                        >
                                             <div className="flex items-center gap-2 mb-1">
-                                                <Badge value={row.invitation_side} type="side" />
-                                                <span className="text-xs text-slate-500">{total} invitations · {row.total_guests} guests allowed</span>
+                                                <Badge
+                                                    value={row.invitation_side}
+                                                    type="side"
+                                                />
+                                                <span className="text-xs text-slate-500">
+                                                    {total} invitations ·{" "}
+                                                    {row.total_guests} guests
+                                                    allowed
+                                                </span>
                                             </div>
-                                            <CssBar value={row.confirmed} max={total} color="#22c55e" label="Confirmed" />
-                                            <CssBar value={total - row.confirmed} max={total} color="#f59e0b" label="Not confirmed" />
+                                            <CssBar
+                                                value={row.confirmed}
+                                                max={total}
+                                                color="#22c55e"
+                                                label="Confirmed"
+                                            />
+                                            <CssBar
+                                                value={total - row.confirmed}
+                                                max={total}
+                                                color="#f59e0b"
+                                                label="Not confirmed"
+                                            />
                                             {(row.actual_attended ?? 0) > 0 && (
-                                                <CssBar value={row.actual_attended!} max={total} color="#6366f1" label="Actual" />
+                                                <CssBar
+                                                    value={row.actual_attended!}
+                                                    max={total}
+                                                    color="#6366f1"
+                                                    label="Actual"
+                                                />
                                             )}
                                         </div>
                                     );
@@ -446,20 +523,47 @@ export default function TeapaiReportPage() {
                                 <table className="min-w-full text-sm">
                                     <thead>
                                         <tr className="border-b border-slate-200">
-                                            {["Type", "Invitations", "Total Guests", "Confirmed", "Declined", "No Response"].map((h) => (
-                                                <th key={h} className="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">{h}</th>
+                                            {[
+                                                "Type",
+                                                "Invitations",
+                                                "Total Guests",
+                                                "Confirmed",
+                                                "Declined",
+                                                "No Response",
+                                            ].map((h) => (
+                                                <th
+                                                    key={h}
+                                                    className="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide"
+                                                >
+                                                    {h}
+                                                </th>
                                             ))}
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100">
                                         {data.byType.map((row) => (
-                                            <tr key={row.type} className="hover:bg-slate-50">
-                                                <td className="px-4 py-3"><Badge value={row.type} /></td>
-                                                <td className="px-4 py-3 font-medium text-slate-900">{row.total_invitations}</td>
-                                                <td className="px-4 py-3 text-slate-600">{row.total_guests}</td>
-                                                <td className="px-4 py-3 text-emerald-700 font-semibold">{row.confirmed}</td>
-                                                <td className="px-4 py-3 text-red-600 font-semibold">{row.declined}</td>
-                                                <td className="px-4 py-3 text-amber-600 font-semibold">{row.no_response}</td>
+                                            <tr
+                                                key={row.type}
+                                                className="hover:bg-slate-50"
+                                            >
+                                                <td className="px-4 py-3">
+                                                    <Badge value={row.type} />
+                                                </td>
+                                                <td className="px-4 py-3 font-medium text-slate-900">
+                                                    {row.total_invitations}
+                                                </td>
+                                                <td className="px-4 py-3 text-slate-600">
+                                                    {row.total_guests}
+                                                </td>
+                                                <td className="px-4 py-3 text-emerald-700 font-semibold">
+                                                    {row.confirmed}
+                                                </td>
+                                                <td className="px-4 py-3 text-red-600 font-semibold">
+                                                    {row.declined}
+                                                </td>
+                                                <td className="px-4 py-3 text-amber-600 font-semibold">
+                                                    {row.no_response}
+                                                </td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -476,9 +580,22 @@ export default function TeapaiReportPage() {
                             accent="amber"
                         >
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <StatCard label="Gave Gift" value={data.giftSummary.gave_gift ?? 0} color="green" />
-                                <StatCard label="No Gift" value={data.giftSummary.no_gift ?? 0} color="red" />
-                                <StatCard label="Gift Rate" value={`${data.giftSummary.gift_rate_pct ?? 0}%`} color="yellow" sub="of attending guests" />
+                                <StatCard
+                                    label="Gave Gift"
+                                    value={data.giftSummary.gave_gift ?? 0}
+                                    color="green"
+                                />
+                                <StatCard
+                                    label="No Gift"
+                                    value={data.giftSummary.no_gift ?? 0}
+                                    color="red"
+                                />
+                                <StatCard
+                                    label="Gift Rate"
+                                    value={`${data.giftSummary.gift_rate_pct ?? 0}%`}
+                                    color="yellow"
+                                    sub="of attending guests"
+                                />
                             </div>
                         </SectionCard>
 
@@ -492,15 +609,35 @@ export default function TeapaiReportPage() {
                         >
                             <div className="space-y-6">
                                 {data.giftBySide.map((row) => {
-                                    const total = (row.gave_gift ?? 0) + (row.no_gift ?? 0);
+                                    const total =
+                                        (row.gave_gift ?? 0) +
+                                        (row.no_gift ?? 0);
                                     return (
-                                        <div key={row.invitation_side} className="space-y-2">
+                                        <div
+                                            key={row.invitation_side}
+                                            className="space-y-2"
+                                        >
                                             <div className="flex items-center gap-2">
-                                                <Badge value={row.invitation_side} type="side" />
-                                                <span className="text-xs text-slate-500">{total} attendees</span>
+                                                <Badge
+                                                    value={row.invitation_side}
+                                                    type="side"
+                                                />
+                                                <span className="text-xs text-slate-500">
+                                                    {total} attendees
+                                                </span>
                                             </div>
-                                            <CssBar value={row.gave_gift ?? 0} max={total} color="#10b981" label="Gave gift" />
-                                            <CssBar value={row.no_gift ?? 0} max={total} color="#f87171" label="No gift" />
+                                            <CssBar
+                                                value={row.gave_gift ?? 0}
+                                                max={total}
+                                                color="#10b981"
+                                                label="Gave gift"
+                                            />
+                                            <CssBar
+                                                value={row.no_gift ?? 0}
+                                                max={total}
+                                                color="#f87171"
+                                                label="No gift"
+                                            />
                                         </div>
                                     );
                                 })}
@@ -519,20 +656,51 @@ export default function TeapaiReportPage() {
                                 <table className="min-w-full text-sm">
                                     <thead>
                                         <tr className="border-b border-slate-200">
-                                            {["Side", "Type", "Total", "Confirmed", "Declined", "Pending"].map((h) => (
-                                                <th key={h} className="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">{h}</th>
+                                            {[
+                                                "Side",
+                                                "Type",
+                                                "Total",
+                                                "Confirmed",
+                                                "Declined",
+                                                "Pending",
+                                            ].map((h) => (
+                                                <th
+                                                    key={h}
+                                                    className="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide"
+                                                >
+                                                    {h}
+                                                </th>
                                             ))}
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100">
                                         {data.crossTab.map((row, i) => (
-                                            <tr key={i} className="hover:bg-slate-50">
-                                                <td className="px-4 py-3"><Badge value={row.invitation_side} /></td>
-                                                <td className="px-4 py-3"><Badge value={row.type} /></td>
-                                                <td className="px-4 py-3 font-semibold text-slate-900">{row.total}</td>
-                                                <td className="px-4 py-3 text-emerald-700 font-semibold">{row.confirmed}</td>
-                                                <td className="px-4 py-3 text-red-600 font-semibold">{row.declined}</td>
-                                                <td className="px-4 py-3 text-amber-600 font-semibold">{row.pending}</td>
+                                            <tr
+                                                key={i}
+                                                className="hover:bg-slate-50"
+                                            >
+                                                <td className="px-4 py-3">
+                                                    <Badge
+                                                        value={
+                                                            row.invitation_side
+                                                        }
+                                                    />
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <Badge value={row.type} />
+                                                </td>
+                                                <td className="px-4 py-3 font-semibold text-slate-900">
+                                                    {row.total}
+                                                </td>
+                                                <td className="px-4 py-3 text-emerald-700 font-semibold">
+                                                    {row.confirmed}
+                                                </td>
+                                                <td className="px-4 py-3 text-red-600 font-semibold">
+                                                    {row.declined}
+                                                </td>
+                                                <td className="px-4 py-3 text-amber-600 font-semibold">
+                                                    {row.pending}
+                                                </td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -550,44 +718,101 @@ export default function TeapaiReportPage() {
                         >
                             <div className="mb-4">
                                 <div className="relative">
-                                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    <svg
+                                        className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                        />
                                     </svg>
                                     <input
                                         type="text"
                                         value={pendingSearch}
-                                        onChange={(e) => setPendingSearch(e.target.value)}
+                                        onChange={(e) =>
+                                            setPendingSearch(e.target.value)
+                                        }
                                         placeholder="Search pending guests…"
                                         className="w-full pl-9 pr-4 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-rose-200 focus:border-rose-400 outline-none text-black placeholder:text-slate-400"
                                     />
                                 </div>
-                                <p className="text-xs text-slate-400 mt-1">{filteredPending.length} of {data.pendingList.length} guests</p>
+                                <p className="text-xs text-slate-400 mt-1">
+                                    {filteredPending.length} of{" "}
+                                    {data.pendingList.length} guests
+                                </p>
                             </div>
                             <div className="overflow-x-auto max-h-80 overflow-y-auto">
                                 <table className="min-w-full text-sm">
                                     <thead className="sticky top-0 bg-white border-b border-slate-200">
                                         <tr>
-                                            {["Name", "Display Name", "Side", "Type", "Max Guests", "Created"].map((h) => (
-                                                <th key={h} className="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">{h}</th>
+                                            {[
+                                                "Name",
+                                                "Display Name",
+                                                "Side",
+                                                "Type",
+                                                "Max Guests",
+                                                "Created",
+                                            ].map((h) => (
+                                                <th
+                                                    key={h}
+                                                    className="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide"
+                                                >
+                                                    {h}
+                                                </th>
                                             ))}
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100">
                                         {filteredPending.length === 0 ? (
                                             <tr>
-                                                <td colSpan={6} className="px-4 py-8 text-center text-slate-400 text-sm">
-                                                    {data.pendingList.length === 0 ? "🎉 All guests have responded!" : "No matching guests."}
+                                                <td
+                                                    colSpan={6}
+                                                    className="px-4 py-8 text-center text-slate-400 text-sm"
+                                                >
+                                                    {data.pendingList.length ===
+                                                    0
+                                                        ? "🎉 All guests have responded!"
+                                                        : "No matching guests."}
                                                 </td>
                                             </tr>
                                         ) : (
                                             filteredPending.map((row, i) => (
-                                                <tr key={i} className="hover:bg-slate-50">
-                                                    <td className="px-4 py-2.5 font-medium text-slate-900">{row.name}</td>
-                                                    <td className="px-4 py-2.5 text-slate-500">{row.display_name || "—"}</td>
-                                                    <td className="px-4 py-2.5"><Badge value={row.invitation_side} /></td>
-                                                    <td className="px-4 py-2.5"><Badge value={row.type} /></td>
-                                                    <td className="px-4 py-2.5 text-slate-600">{row.number_of_guests}</td>
-                                                    <td className="px-4 py-2.5 text-slate-400 text-xs">{new Date(row.created_at).toLocaleDateString()}</td>
+                                                <tr
+                                                    key={i}
+                                                    className="hover:bg-slate-50"
+                                                >
+                                                    <td className="px-4 py-2.5 font-medium text-slate-900">
+                                                        {row.name}
+                                                    </td>
+                                                    <td className="px-4 py-2.5 text-slate-500">
+                                                        {row.display_name ||
+                                                            "—"}
+                                                    </td>
+                                                    <td className="px-4 py-2.5">
+                                                        <Badge
+                                                            value={
+                                                                row.invitation_side
+                                                            }
+                                                        />
+                                                    </td>
+                                                    <td className="px-4 py-2.5">
+                                                        <Badge
+                                                            value={row.type}
+                                                        />
+                                                    </td>
+                                                    <td className="px-4 py-2.5 text-slate-600">
+                                                        {row.number_of_guests}
+                                                    </td>
+                                                    <td className="px-4 py-2.5 text-slate-400 text-xs">
+                                                        {new Date(
+                                                            row.created_at,
+                                                        ).toLocaleDateString()}
+                                                    </td>
                                                 </tr>
                                             ))
                                         )}
@@ -605,23 +830,37 @@ export default function TeapaiReportPage() {
                             accent="cyan"
                         >
                             {data.timeline.length === 0 ? (
-                                <p className="text-slate-400 text-sm py-8 text-center">No RSVP responses recorded yet.</p>
+                                <p className="text-slate-400 text-sm py-8 text-center">
+                                    No RSVP responses recorded yet.
+                                </p>
                             ) : (
                                 <div className="space-y-2">
                                     {data.timeline.map((row) => (
-                                        <div key={row.response_date} className="flex items-center gap-3">
+                                        <div
+                                            key={row.response_date}
+                                            className="flex items-center gap-3"
+                                        >
                                             <span className="text-xs text-slate-500 w-24 shrink-0">
-                                                {new Date(row.response_date).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}
+                                                {new Date(
+                                                    row.response_date,
+                                                ).toLocaleDateString("en-GB", {
+                                                    day: "2-digit",
+                                                    month: "short",
+                                                })}
                                             </span>
                                             <div className="flex-1 flex gap-1 h-5">
                                                 <div
                                                     className="h-5 rounded bg-emerald-400 transition-all duration-500"
-                                                    style={{ width: `${Math.round((row.confirmed / timelineMax) * 100)}%` }}
+                                                    style={{
+                                                        width: `${Math.round((row.confirmed / timelineMax) * 100)}%`,
+                                                    }}
                                                     title={`${row.confirmed} confirmed`}
                                                 />
                                                 <div
                                                     className="h-5 rounded bg-red-400 transition-all duration-500"
-                                                    style={{ width: `${Math.round((row.declined / timelineMax) * 100)}%` }}
+                                                    style={{
+                                                        width: `${Math.round((row.declined / timelineMax) * 100)}%`,
+                                                    }}
                                                     title={`${row.declined} declined`}
                                                 />
                                             </div>
@@ -632,10 +871,12 @@ export default function TeapaiReportPage() {
                                     ))}
                                     <div className="flex gap-4 mt-4 pt-4 border-t border-slate-100">
                                         <span className="flex items-center gap-1.5 text-xs text-slate-500">
-                                            <span className="w-3 h-3 rounded bg-emerald-400 inline-block" /> Confirmed
+                                            <span className="w-3 h-3 rounded bg-emerald-400 inline-block" />{" "}
+                                            Confirmed
                                         </span>
                                         <span className="flex items-center gap-1.5 text-xs text-slate-500">
-                                            <span className="w-3 h-3 rounded bg-red-400 inline-block" /> Declined
+                                            <span className="w-3 h-3 rounded bg-red-400 inline-block" />{" "}
+                                            Declined
                                         </span>
                                     </div>
                                 </div>
@@ -654,23 +895,51 @@ export default function TeapaiReportPage() {
                                 <table className="min-w-full text-sm">
                                     <thead>
                                         <tr className="border-b border-slate-200">
-                                            {["Guests / Invite", "# Invitations", "Confirmed", "Confirm Rate"].map((h) => (
-                                                <th key={h} className="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">{h}</th>
+                                            {[
+                                                "Guests / Invite",
+                                                "# Invitations",
+                                                "Confirmed",
+                                                "Confirm Rate",
+                                            ].map((h) => (
+                                                <th
+                                                    key={h}
+                                                    className="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide"
+                                                >
+                                                    {h}
+                                                </th>
                                             ))}
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100">
                                         {data.byGuestCount.map((row, i) => (
-                                            <tr key={i} className="hover:bg-slate-50">
-                                                <td className="px-4 py-2.5 font-semibold text-slate-900">{row.guests_per_invite} pax</td>
-                                                <td className="px-4 py-2.5 text-slate-600">{row.invitations}</td>
-                                                <td className="px-4 py-2.5 text-emerald-700 font-semibold">{row.confirmed}</td>
+                                            <tr
+                                                key={i}
+                                                className="hover:bg-slate-50"
+                                            >
+                                                <td className="px-4 py-2.5 font-semibold text-slate-900">
+                                                    {row.guests_per_invite} pax
+                                                </td>
+                                                <td className="px-4 py-2.5 text-slate-600">
+                                                    {row.invitations}
+                                                </td>
+                                                <td className="px-4 py-2.5 text-emerald-700 font-semibold">
+                                                    {row.confirmed}
+                                                </td>
                                                 <td className="px-4 py-2.5">
                                                     <div className="flex items-center gap-2">
                                                         <div className="flex-1 bg-slate-100 rounded-full h-2">
-                                                            <div className="h-2 rounded-full bg-violet-500" style={{ width: `${row.confirm_rate_pct ?? 0}%` }} />
+                                                            <div
+                                                                className="h-2 rounded-full bg-violet-500"
+                                                                style={{
+                                                                    width: `${row.confirm_rate_pct ?? 0}%`,
+                                                                }}
+                                                            />
                                                         </div>
-                                                        <span className="text-xs font-semibold text-violet-700">{row.confirm_rate_pct ?? 0}%</span>
+                                                        <span className="text-xs font-semibold text-violet-700">
+                                                            {row.confirm_rate_pct ??
+                                                                0}
+                                                            %
+                                                        </span>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -689,14 +958,21 @@ export default function TeapaiReportPage() {
                             accent="amber"
                         >
                             {data.attendedBy.length === 0 ? (
-                                <p className="text-slate-400 text-sm py-8 text-center">No companion data recorded yet.</p>
+                                <p className="text-slate-400 text-sm py-8 text-center">
+                                    No companion data recorded yet.
+                                </p>
                             ) : (
                                 <div className="space-y-2">
                                     {data.attendedBy.map((row, i) => (
                                         <CssBar
                                             key={i}
                                             value={row.count}
-                                            max={Math.max(...data.attendedBy.map((r) => r.count), 1)}
+                                            max={Math.max(
+                                                ...data.attendedBy.map(
+                                                    (r) => r.count,
+                                                ),
+                                                1,
+                                            )}
                                             color="#f59e0b"
                                             label={row.attended_by}
                                         />
@@ -715,43 +991,95 @@ export default function TeapaiReportPage() {
                         >
                             <div className="mb-4">
                                 <div className="relative">
-                                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    <svg
+                                        className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                        />
                                     </svg>
                                     <input
                                         type="text"
                                         value={notesSearch}
-                                        onChange={(e) => setNotesSearch(e.target.value)}
+                                        onChange={(e) =>
+                                            setNotesSearch(e.target.value)
+                                        }
                                         placeholder="Search notes…"
                                         className="w-full pl-9 pr-4 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-rose-200 focus:border-rose-400 outline-none text-black placeholder:text-slate-400"
                                     />
                                 </div>
-                                <p className="text-xs text-slate-400 mt-1">{filteredNotes.length} of {data.adminNotes.length} records</p>
+                                <p className="text-xs text-slate-400 mt-1">
+                                    {filteredNotes.length} of{" "}
+                                    {data.adminNotes.length} records
+                                </p>
                             </div>
                             <div className="overflow-x-auto max-h-80 overflow-y-auto">
                                 <table className="min-w-full text-sm">
                                     <thead className="sticky top-0 bg-white border-b border-slate-200">
                                         <tr>
-                                            {["Name", "Display Name", "Side", "Type", "Admin Note"].map((h) => (
-                                                <th key={h} className="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">{h}</th>
+                                            {[
+                                                "Name",
+                                                "Display Name",
+                                                "Side",
+                                                "Type",
+                                                "Admin Note",
+                                            ].map((h) => (
+                                                <th
+                                                    key={h}
+                                                    className="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide"
+                                                >
+                                                    {h}
+                                                </th>
                                             ))}
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100">
                                         {filteredNotes.length === 0 ? (
                                             <tr>
-                                                <td colSpan={5} className="px-4 py-8 text-center text-slate-400 text-sm">
-                                                    {data.adminNotes.length === 0 ? "No admin notes recorded." : "No matching records."}
+                                                <td
+                                                    colSpan={5}
+                                                    className="px-4 py-8 text-center text-slate-400 text-sm"
+                                                >
+                                                    {data.adminNotes.length ===
+                                                    0
+                                                        ? "No admin notes recorded."
+                                                        : "No matching records."}
                                                 </td>
                                             </tr>
                                         ) : (
                                             filteredNotes.map((row, i) => (
-                                                <tr key={i} className="hover:bg-slate-50">
-                                                    <td className="px-4 py-2.5 font-medium text-slate-900">{row.name}</td>
-                                                    <td className="px-4 py-2.5 text-slate-500">{row.display_name || "—"}</td>
-                                                    <td className="px-4 py-2.5"><Badge value={row.invitation_side} /></td>
-                                                    <td className="px-4 py-2.5"><Badge value={row.type} /></td>
-                                                    <td className="px-4 py-2.5 text-slate-700 text-xs italic">{row.admin_note}</td>
+                                                <tr
+                                                    key={i}
+                                                    className="hover:bg-slate-50"
+                                                >
+                                                    <td className="px-4 py-2.5 font-medium text-slate-900">
+                                                        {row.name}
+                                                    </td>
+                                                    <td className="px-4 py-2.5 text-slate-500">
+                                                        {row.display_name ||
+                                                            "—"}
+                                                    </td>
+                                                    <td className="px-4 py-2.5">
+                                                        <Badge
+                                                            value={
+                                                                row.invitation_side
+                                                            }
+                                                        />
+                                                    </td>
+                                                    <td className="px-4 py-2.5">
+                                                        <Badge
+                                                            value={row.type}
+                                                        />
+                                                    </td>
+                                                    <td className="px-4 py-2.5 text-slate-700 text-xs italic">
+                                                        {row.admin_note}
+                                                    </td>
                                                 </tr>
                                             ))
                                         )}
@@ -759,7 +1087,6 @@ export default function TeapaiReportPage() {
                                 </table>
                             </div>
                         </SectionCard>
-
                     </div>
                 )}
             </div>

@@ -8,8 +8,8 @@ export interface TeapaiRecord extends RowDataPacket {
     name: string;
     display_name: string | null;
     number_of_guests: number;
-    type: 'FAMILY' | 'PUBLIC';
-    invitation_side: 'GROOM' | 'BRIDE';
+    type: "FAMILY" | "PUBLIC";
+    invitation_side: "GROOM" | "BRIDE";
     expected_attendance: number | null;
     actual_attendance: number | null;
     attended_by: string | null;
@@ -30,8 +30,8 @@ export async function createTeapaiInvitation(data: {
     urlToken: string;
     name: string;
     numberOfGuests: number;
-    type: 'FAMILY' | 'PUBLIC';
-    invitation_side: 'GROOM' | 'BRIDE';
+    type: "FAMILY" | "PUBLIC";
+    invitation_side: "GROOM" | "BRIDE";
     adminNote?: string;
     createdBy?: string;
 }): Promise<void> {
@@ -46,14 +46,16 @@ export async function createTeapaiInvitation(data: {
             data.invitation_side,
             data.adminNote || null,
             data.createdBy || "admin",
-        ]
+        ],
     );
 }
 
-export async function getTeapaiByToken(token: string): Promise<TeapaiRecord | null> {
+export async function getTeapaiByToken(
+    token: string,
+): Promise<TeapaiRecord | null> {
     const [rows] = await pool.execute<TeapaiRecord[]>(
         "SELECT * FROM teapai WHERE url_token = ? AND deleted_at IS NULL LIMIT 1",
-        [token]
+        [token],
     );
     return rows[0] || null;
 }
@@ -67,7 +69,7 @@ export async function updateTeapaiResponse(
         teapai: "pagi" | "malam" | null;
         submitted_ip?: string;
         user_agent?: string;
-    }
+    },
 ): Promise<boolean> {
     const [result] = await pool.execute<ResultSetHeader>(
         `UPDATE teapai 
@@ -87,16 +89,50 @@ export async function updateTeapaiResponse(
             data.submitted_ip || null,
             data.user_agent || null,
             token,
-        ]
+        ],
     );
     return result.affectedRows > 0;
 }
 
 export async function listTeapaiInvitations(): Promise<TeapaiRecord[]> {
     const [rows] = await pool.execute<TeapaiRecord[]>(
-        "SELECT * FROM teapai WHERE deleted_at IS NULL ORDER BY created_at DESC"
+        "SELECT * FROM teapai WHERE deleted_at IS NULL ORDER BY created_at DESC",
     );
     return rows;
+}
+
+export async function updateTeapaiInvitation(
+    token: string,
+    data: {
+        name: string;
+        numberOfGuests: number;
+        type: "FAMILY" | "PUBLIC";
+        invitation_side: "GROOM" | "BRIDE";
+        adminNote?: string;
+    },
+): Promise<boolean> {
+    const [result] = await pool.execute<ResultSetHeader>(
+        `UPDATE teapai 
+         SET name = ?, number_of_guests = ?, type = ?, invitation_side = ?, admin_note = ?
+         WHERE url_token = ? AND deleted_at IS NULL AND is_attending IS NULL`,
+        [
+            data.name,
+            data.numberOfGuests,
+            data.type,
+            data.invitation_side,
+            data.adminNote || null,
+            token,
+        ],
+    );
+    return result.affectedRows > 0;
+}
+
+export async function deleteTeapaiInvitation(token: string): Promise<boolean> {
+    const [result] = await pool.execute<ResultSetHeader>(
+        "UPDATE teapai SET deleted_at = CURRENT_TIMESTAMP WHERE url_token = ? AND deleted_at IS NULL",
+        [token],
+    );
+    return result.affectedRows > 0;
 }
 
 export async function getTeapaiReports() {
@@ -243,4 +279,3 @@ export async function getTeapaiReports() {
         adminNotes,
     };
 }
-
