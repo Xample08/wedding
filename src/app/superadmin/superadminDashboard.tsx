@@ -322,6 +322,16 @@ export function SuperadminDashboard() {
                         >
                             Teapai Master
                         </Link>
+                        <Link
+                            href="/superadmin/report/teapai"
+                            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                                pathname === "/superadmin/report/teapai"
+                                    ? "bg-slate-900 text-white shadow-md"
+                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                            }`}
+                        >
+                            Wedding Analytics
+                        </Link>
                     </nav>
                 </div>
 

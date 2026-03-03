@@ -192,7 +192,7 @@ export default function TeapaiGuestPage({ params }: { params: Promise<{ token: s
         <div className="fixed inset-0 w-full h-full bg-slate-900 flex items-center justify-center font-serif overflow-hidden overscroll-none touch-pan-y">
             <main className="relative h-full w-full max-w-[435px] bg-[#fdfaf1] shadow-2xl overflow-hidden font-serif">
                 {/* Language Switcher */}
-                <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50">
+                <div className="absolute top-4 left-4 z-50">
                     <div className="bg-white/40 backdrop-blur-md border border-white/20 p-1 rounded-full flex gap-1 shadow-lg scale-90">
                         <button 
                             onClick={() => setLang('ID')}
@@ -258,7 +258,7 @@ export default function TeapaiGuestPage({ params }: { params: Promise<{ token: s
                             >
                                 <div className="text-center mb-6">
                                     <h1 className="text-2xl font-bold text-[#b4352a] mb-1 whitespace-pre-line leading-tight">{content.title}</h1>
-                                    <p className="text-slate-500 italic text-xs tracking-wide">{content.sub_title}</p>
+                                    <p className="text-slate-500 italic text-xs tracking-wide mt-5">{content.sub_title}</p>
                                     <div className="mt-4 text-lg font-medium text-slate-800 whitespace-pre-line leading-snug">
                                         {content.welcome_message.replace('{name}', data.name)}
                                     </div>

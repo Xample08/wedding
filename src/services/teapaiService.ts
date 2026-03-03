@@ -98,3 +98,149 @@ export async function listTeapaiInvitations(): Promise<TeapaiRecord[]> {
     );
     return rows;
 }
+
+export async function getTeapaiReports() {
+    const q = async (sql: string, params: any[] = []) => {
+        const [rows] = await pool.execute<RowDataPacket[]>(sql, params);
+        return rows;
+    };
+
+    const [
+        rsvpSummary,
+        attendanceSummary,
+        bySide,
+        byType,
+        giftSummary,
+        giftBySide,
+        crossTab,
+        pendingList,
+        timeline,
+        byGuestCount,
+        attendedBy,
+        adminNotes,
+    ] = await Promise.all([
+        // 1. Overall RSVP Summary
+        q(`SELECT
+            COUNT(*) AS total_invitations,
+            SUM(is_attending = 1) AS confirmed_attending,
+            SUM(is_attending = 0) AS declined,
+            SUM(is_attending IS NULL) AS no_response,
+            ROUND(SUM(is_attending = 1) / COUNT(*) * 100, 1) AS response_rate_pct
+           FROM teapai WHERE deleted_at IS NULL`),
+
+        // 2. Expected vs Actual Attendance
+        q(`SELECT
+            SUM(expected_attendance) AS total_expected,
+            SUM(actual_attendance) AS total_actual,
+            SUM(expected_attendance) - SUM(actual_attendance) AS difference
+           FROM teapai WHERE deleted_at IS NULL AND is_attending = 1`),
+
+        // 3. By Invitation Side
+        q(`SELECT
+            invitation_side,
+            COUNT(*) AS total_invitations,
+            SUM(number_of_guests) AS total_guests,
+            SUM(is_attending = 1) AS confirmed,
+            SUM(actual_attendance) AS actual_attended
+           FROM teapai WHERE deleted_at IS NULL
+           GROUP BY invitation_side`),
+
+        // 4. Family vs Public
+        q(`SELECT
+            type,
+            COUNT(*) AS total_invitations,
+            SUM(number_of_guests) AS total_guests,
+            SUM(is_attending = 1) AS confirmed,
+            SUM(is_attending = 0) AS declined,
+            SUM(is_attending IS NULL) AS no_response
+           FROM teapai WHERE deleted_at IS NULL
+           GROUP BY type`),
+
+        // 5. Gift Tracking Summary
+        q(`SELECT
+            SUM(gave_gift = 1) AS gave_gift,
+            SUM(gave_gift = 0) AS no_gift,
+            ROUND(SUM(gave_gift = 1) / COUNT(*) * 100, 1) AS gift_rate_pct
+           FROM teapai WHERE deleted_at IS NULL AND is_attending = 1`),
+
+        // 6. Gift by Side
+        q(`SELECT
+            invitation_side,
+            SUM(gave_gift = 1) AS gave_gift,
+            SUM(gave_gift = 0) AS no_gift
+           FROM teapai WHERE deleted_at IS NULL AND is_attending = 1
+           GROUP BY invitation_side`),
+
+        // 7. Response Rate Cross-tab
+        q(`SELECT
+            invitation_side,
+            type,
+            COUNT(*) AS total,
+            SUM(is_attending = 1) AS confirmed,
+            SUM(is_attending = 0) AS declined,
+            SUM(is_attending IS NULL) AS pending
+           FROM teapai WHERE deleted_at IS NULL
+           GROUP BY invitation_side, type
+           ORDER BY invitation_side, type`),
+
+        // 8. Pending / No Response List
+        q(`SELECT
+            name, display_name, invitation_side, type, number_of_guests, created_at
+           FROM teapai
+           WHERE deleted_at IS NULL AND is_attending IS NULL
+           ORDER BY invitation_side, type, created_at`),
+
+        // 9. Daily RSVP Timeline
+        q(`SELECT
+            DATE(responded_at) AS response_date,
+            COUNT(*) AS responses,
+            SUM(is_attending = 1) AS confirmed,
+            SUM(is_attending = 0) AS declined
+           FROM teapai
+           WHERE deleted_at IS NULL AND responded_at IS NOT NULL
+           GROUP BY DATE(responded_at)
+           ORDER BY response_date`),
+
+        // 10. Attendance Rate by Guest Count
+        q(`SELECT
+            number_of_guests AS guests_per_invite,
+            COUNT(*) AS invitations,
+            SUM(is_attending = 1) AS confirmed,
+            ROUND(SUM(is_attending = 1) / COUNT(*) * 100, 1) AS confirm_rate_pct
+           FROM teapai WHERE deleted_at IS NULL
+           GROUP BY number_of_guests
+           ORDER BY number_of_guests`),
+
+        // 11. Attended By Summary
+        q(`SELECT
+            attended_by,
+            COUNT(*) AS count
+           FROM teapai
+           WHERE deleted_at IS NULL AND attended_by IS NOT NULL AND attended_by != ''
+           GROUP BY attended_by
+           ORDER BY count DESC`),
+
+        // 12. Admin Notes
+        q(`SELECT
+            name, display_name, invitation_side, type, admin_note
+           FROM teapai
+           WHERE deleted_at IS NULL AND admin_note IS NOT NULL AND admin_note != ''
+           ORDER BY invitation_side`),
+    ]);
+
+    return {
+        rsvpSummary: rsvpSummary[0] ?? {},
+        attendanceSummary: attendanceSummary[0] ?? {},
+        bySide,
+        byType,
+        giftSummary: giftSummary[0] ?? {},
+        giftBySide,
+        crossTab,
+        pendingList,
+        timeline,
+        byGuestCount,
+        attendedBy,
+        adminNotes,
+    };
+}
+
