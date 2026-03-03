@@ -259,8 +259,10 @@ export default function TeapaiGuestPage({ params }: { params: Promise<{ token: s
                                 <div className="text-center mb-6">
                                     <h1 className="text-2xl font-bold text-[#b4352a] mb-1 whitespace-pre-line leading-tight">{content.title}</h1>
                                     <p className="text-slate-500 italic text-xs tracking-wide mt-5">{content.sub_title}</p>
-                                    <div className="mt-4 text-lg font-medium text-slate-800 whitespace-pre-line leading-snug">
-                                        {content.welcome_message.replace('{name}', data.name)}
+                                    <div className="mt-4 text-lg font-medium text-slate-800 leading-snug">
+                                        {content.welcome_message.replace('{name}', data.name).split('\n').map((line, i, arr) => (
+                                            <span key={i}>{line}{i < arr.length - 1 && <br />}</span>
+                                        ))}
                                     </div>
                                 </div>
 
