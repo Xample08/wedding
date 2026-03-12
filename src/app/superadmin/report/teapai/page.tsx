@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { AdminNavbar } from "../../../components/AdminNavbar";
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -298,12 +297,6 @@ export default function TeapaiReportPage() {
         [data?.timeline],
     );
 
-    const navLinks = [
-        { href: "/superadmin", label: "Wedding Invitations" },
-        { href: "/superadmin/teapai", label: "Engagement Master" },
-        { href: "/superadmin/report/teapai", label: "Engagement Analytics" },
-    ];
-
     return (
         <div className="min-h-screen bg-slate-50 pb-16">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -335,21 +328,7 @@ export default function TeapaiReportPage() {
                         </p>
                     </div>
 
-                    <nav className="flex items-center gap-1 bg-white p-1 rounded-2xl shadow-sm border border-slate-200 flex-wrap">
-                        {navLinks.map((link) => (
-                            <Link
-                                key={link.href}
-                                href={link.href}
-                                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
-                                    pathname === link.href
-                                        ? "bg-slate-900 text-white shadow-md"
-                                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                                }`}
-                            >
-                                {link.label}
-                            </Link>
-                        ))}
-                    </nav>
+                    <AdminNavbar />
                 </div>
 
                 {/* ── Loading / Error ── */}

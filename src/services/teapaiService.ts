@@ -135,6 +135,25 @@ export async function deleteTeapaiInvitation(token: string): Promise<boolean> {
     return result.affectedRows > 0;
 }
 
+export async function markAttendance(
+    token: string,
+    data: {
+        actual_attendance: number;
+        gave_gift: number;
+        attended_by: string;
+    },
+): Promise<boolean> {
+    const [result] = await pool.execute<ResultSetHeader>(
+        `UPDATE teapai 
+         SET actual_attendance = ?, 
+             gave_gift = ?, 
+             attended_by = ?
+         WHERE url_token = ? AND deleted_at IS NULL`,
+        [data.actual_attendance, data.gave_gift, data.attended_by, token],
+    );
+    return result.affectedRows > 0;
+}
+
 export async function getTeapaiReports() {
     const q = async (sql: string, params: any[] = []) => {
         const [rows] = await pool.execute<RowDataPacket[]>(sql, params);

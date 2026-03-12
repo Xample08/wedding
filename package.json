@@ -16,6 +16,7 @@
         "lucide-react": "^0.562.0",
         "mysql2": "^3.14.3",
         "next": "16.1.1",
+        "node-zpl": "^1.0.5",
         "qrcode": "^1.5.4",
         "react": "19.2.3",
         "react-dom": "19.2.3",

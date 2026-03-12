@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import { AdminNavbar } from "../components/AdminNavbar";
 import { usePathname } from "next/navigation";
 
 type InvitationRow = {
@@ -68,7 +68,7 @@ export function SuperadminDashboard() {
 
     // Delete confirmation
     const [confirmDelete, setConfirmDelete] = useState<ConfirmDelete | null>(
-        null
+        null,
     );
     const [deleting, setDeleting] = useState(false);
 
@@ -111,7 +111,7 @@ export function SuperadminDashboard() {
                 (r) =>
                     r.name.toLowerCase().includes(term) ||
                     r.display_name?.toLowerCase().includes(term) ||
-                    r.url_token.toLowerCase().includes(term)
+                    r.url_token.toLowerCase().includes(term),
             );
         }
 
@@ -214,7 +214,7 @@ export function SuperadminDashboard() {
                         type: editingRow.type,
                         admin_note: editingRow.admin_note,
                     }),
-                }
+                },
             );
             const data = await res.json().catch(() => ({}));
             if (!res.ok) {
@@ -230,7 +230,7 @@ export function SuperadminDashboard() {
 
     const toggleShowWishes = async (
         token: string,
-        currentValue: boolean | null
+        currentValue: boolean | null,
     ) => {
         try {
             const res = await fetch(
@@ -239,7 +239,7 @@ export function SuperadminDashboard() {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ show_wishes: !currentValue }),
-                }
+                },
             );
             if (res.ok) {
                 await load();
@@ -251,7 +251,7 @@ export function SuperadminDashboard() {
 
     const toggleGaveGift = async (
         token: string,
-        currentValue: boolean | null
+        currentValue: boolean | null,
     ) => {
         try {
             const res = await fetch(
@@ -260,7 +260,7 @@ export function SuperadminDashboard() {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ gave_gift: !currentValue }),
-                }
+                },
             );
             if (res.ok) {
                 await load();
@@ -276,7 +276,7 @@ export function SuperadminDashboard() {
         try {
             const res = await fetch(
                 `/api/superadmin/invitations/${confirmDelete.token}`,
-                { method: "DELETE" }
+                { method: "DELETE" },
             );
             if (res.ok) {
                 await load();
@@ -301,38 +301,7 @@ export function SuperadminDashboard() {
                         </p>
                     </div>
 
-                    <nav className="flex items-center gap-1 bg-white p-1 rounded-2xl shadow-sm border border-slate-200">
-                        <Link
-                            href="/superadmin"
-                            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
-                                pathname === "/superadmin"
-                                    ? "bg-slate-900 text-white shadow-md"
-                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                            }`}
-                        >
-                            Wedding Invitations
-                        </Link>
-                        <Link
-                            href="/superadmin/teapai"
-                            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
-                                pathname === "/superadmin/teapai"
-                                    ? "bg-slate-900 text-white shadow-md"
-                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                            }`}
-                        >
-                            Engagement Master
-                        </Link>
-                        <Link
-                            href="/superadmin/report/teapai"
-                            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
-                                pathname === "/superadmin/report/teapai"
-                                    ? "bg-slate-900 text-white shadow-md"
-                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                            }`}
-                        >
-                            Engagement Analytics
-                        </Link>
-                    </nav>
+                    <AdminNavbar />
                 </div>
 
                 {/* Create Button */}
@@ -399,7 +368,7 @@ export function SuperadminDashboard() {
                                         setForm((f) => ({
                                             ...f,
                                             number_of_guests: Number(
-                                                e.target.value
+                                                e.target.value,
                                             ),
                                         }))
                                     }
@@ -604,7 +573,7 @@ export function SuperadminDashboard() {
                                                 key={col.key}
                                                 onClick={() =>
                                                     handleSort(
-                                                        col.key as keyof InvitationRow
+                                                        col.key as keyof InvitationRow,
                                                     )
                                                 }
                                                 className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors"
@@ -686,20 +655,20 @@ export function SuperadminDashboard() {
                                                         true
                                                             ? "bg-green-100 text-green-800"
                                                             : row.is_attending ===
-                                                              false
-                                                            ? "bg-red-100 text-red-800"
-                                                            : "bg-yellow-100 text-yellow-800"
+                                                                false
+                                                              ? "bg-red-100 text-red-800"
+                                                              : "bg-yellow-100 text-yellow-800"
                                                     }`}
                                                 >
                                                     {respondedLabel(
-                                                        row.is_attending
+                                                        row.is_attending,
                                                     )}
                                                 </span>
                                             </td>
                                             <td className="px-4 py-4 text-sm text-slate-600">
                                                 {row.responded_at
                                                     ? new Date(
-                                                          row.responded_at
+                                                          row.responded_at,
                                                       ).toLocaleDateString()
                                                     : "-"}
                                             </td>
@@ -731,7 +700,9 @@ export function SuperadminDashboard() {
 
                                                     <button
                                                         onClick={() => {
-                                                            navigator.clipboard.writeText(row.invitation_url);
+                                                            navigator.clipboard.writeText(
+                                                                row.invitation_url,
+                                                            );
                                                         }}
                                                         className="p-1.5 rounded-lg hover:bg-indigo-50 text-indigo-600 transition-colors"
                                                         title="Copy invitation URL"
@@ -777,7 +748,7 @@ export function SuperadminDashboard() {
                                                         <button
                                                             onClick={() =>
                                                                 setWishesModal(
-                                                                    row
+                                                                    row,
                                                                 )
                                                             }
                                                             className="p-1.5 rounded-lg hover:bg-pink-50 text-pink-600 transition-colors"
@@ -806,7 +777,7 @@ export function SuperadminDashboard() {
                                                             onClick={() =>
                                                                 toggleShowWishes(
                                                                     row.url_token,
-                                                                    row.show_wishes
+                                                                    row.show_wishes,
                                                                 )
                                                             }
                                                             className={`p-1.5 rounded-lg transition-colors ${
@@ -860,11 +831,14 @@ export function SuperadminDashboard() {
                                                     >
                                                         <input
                                                             type="checkbox"
-                                                            checked={row.gave_gift || false}
+                                                            checked={
+                                                                row.gave_gift ||
+                                                                false
+                                                            }
                                                             onChange={() =>
                                                                 toggleGaveGift(
                                                                     row.url_token,
-                                                                    row.gave_gift
+                                                                    row.gave_gift,
                                                                 )
                                                             }
                                                             className="sr-only peer"
@@ -945,7 +919,7 @@ export function SuperadminDashboard() {
                                         setEditingRow((r) =>
                                             r
                                                 ? { ...r, name: e.target.value }
-                                                : null
+                                                : null,
                                         )
                                     }
                                     className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
@@ -966,10 +940,10 @@ export function SuperadminDashboard() {
                                                 ? {
                                                       ...r,
                                                       number_of_guests: Number(
-                                                          e.target.value
+                                                          e.target.value,
                                                       ),
                                                   }
-                                                : null
+                                                : null,
                                         )
                                     }
                                     disabled={editingRow.responded_at !== null}
@@ -997,7 +971,7 @@ export function SuperadminDashboard() {
                                                       type: e.target
                                                           .value as any,
                                                   }
-                                                : null
+                                                : null,
                                         )
                                     }
                                     className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
@@ -1023,7 +997,7 @@ export function SuperadminDashboard() {
                                                           is_family:
                                                               e.target.checked,
                                                       }
-                                                    : null
+                                                    : null,
                                             )
                                         }
                                         className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-200"
@@ -1048,7 +1022,7 @@ export function SuperadminDashboard() {
                                                       admin_note:
                                                           e.target.value,
                                                   }
-                                                : null
+                                                : null,
                                         )
                                     }
                                     rows={3}
@@ -1144,7 +1118,7 @@ export function SuperadminDashboard() {
                                 onClick={() => {
                                     toggleShowWishes(
                                         wishesModal.url_token,
-                                        wishesModal.show_wishes
+                                        wishesModal.show_wishes,
                                     );
                                     setWishesModal(null);
                                 }}

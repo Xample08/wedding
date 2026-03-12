@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { AdminNavbar } from "../../components/AdminNavbar";
 
 type TeapaiInvitation = {
     url_token: string;
@@ -217,38 +216,7 @@ export default function TeapaiAdminPage() {
                         </p>
                     </div>
 
-                    <nav className="flex items-center gap-1 bg-white p-1 rounded-2xl shadow-sm border border-slate-200">
-                        <Link
-                            href="/superadmin"
-                            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
-                                pathname === "/superadmin"
-                                    ? "bg-slate-900 text-white shadow-md"
-                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                            }`}
-                        >
-                            Wedding Invitations
-                        </Link>
-                        <Link
-                            href="/superadmin/teapai"
-                            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
-                                pathname === "/superadmin/teapai"
-                                    ? "bg-slate-900 text-white shadow-md"
-                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                            }`}
-                        >
-                            Engagement Master
-                        </Link>
-                        <Link
-                            href="/superadmin/report/teapai"
-                            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
-                                pathname === "/superadmin/report/teapai"
-                                    ? "bg-slate-900 text-white shadow-md"
-                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                            }`}
-                        >
-                            Engagement Analytics
-                        </Link>
-                    </nav>
+                    <AdminNavbar />
                 </div>
 
                 {/* Import/Export Actions */}
