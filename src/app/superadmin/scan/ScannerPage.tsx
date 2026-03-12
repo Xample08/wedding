@@ -10,11 +10,16 @@ type TeapaiData = {
     expected_attendance: number | null;
     is_attending: number | null;
     teapai: "pagi" | "malam" | null;
+    invitation_side: "GROOM" | "BRIDE";
+    id: number;
 };
+
+type PageState = "welcome" | "scanner" | "form";
 
 export default function ScannerPage() {
     const router = useRouter();
-    const [scanning, setScanning] = useState(true);
+    const [pageState, setPageState] = useState<PageState>("welcome");
+    const [scanning, setScanning] = useState(false);
     const [token, setToken] = useState<string | null>(null);
     const [data, setData] = useState<TeapaiData | null>(null);
     const [loading, setLoading] = useState(false);
@@ -30,13 +35,19 @@ export default function ScannerPage() {
     const [manualToken, setManualToken] = useState("");
 
     useEffect(() => {
-        if (scanning) {
+        if (pageState === "scanner" && scanning) {
             startCamera();
         }
         return () => {
             stopCamera();
         };
-    }, [scanning]);
+    }, [pageState, scanning]);
+
+    const handleWelcomeClick = () => {
+        setPageState("scanner");
+        setScanning(true);
+        console.log("Welcome screen clicked, starting scanner...");
+    };
 
     const startCamera = async () => {
         try {
@@ -135,6 +146,7 @@ export default function ScannerPage() {
             if (res.ok) {
                 setData(json);
                 setAttendance(json.expected_attendance || 1);
+                setPageState("form");
             } else {
                 setError(json.error || "Invitation not found");
             }
@@ -177,6 +189,10 @@ export default function ScannerPage() {
         }
     };
 
+    useEffect(() => {
+        console.log(data);
+    }, [data]);
+
     const resetScanner = () => {
         setToken(null);
         setData(null);
@@ -184,22 +200,105 @@ export default function ScannerPage() {
         setGaveGift(false);
         setError(null);
         setManualToken("");
-        setScanning(true);
+        setPageState("welcome");
+        setScanning(false);
     };
 
-    // Toggle switch size calculations
-    const toggleSize = 30; // Base size in pixels
-    const toggleHeight = toggleSize;
-    const toggleWidth = toggleSize * 2;
-    const toggleCircle = toggleSize * 0.7;
-    const togglePadding = toggleSize * 0.15;
-    const toggleTranslateOn = toggleWidth - toggleCircle - togglePadding;
-    const toggleTranslateOff = togglePadding;
+    // Form sizing variables
+    const formSizes = {
+        input: {
+            width: "300px", // Width of the attendance input
+            height: "70px", // Height of the attendance input
+            fontSize: "2.5rem", // Font size for the number
+            buttonSize: "40px", // Size of +/- buttons
+        },
+        toggle: {
+            width: "60px", // Width of envelope toggle
+            height: "30px", // Height of envelope toggle
+            iconSize: "20px", // Size of envelope icon circle
+            fontSize: "0.875rem", // Font size for YES/NO text
+        },
+    };
 
     return (
-        <div className="fixed inset-0 w-full h-full bg-[#fbf6e8] flex items-center justify-center font-serif overflow-hidden overscroll-none touch-pan-y">
-            <main className="relative h-full w-full bg-[#fbf6e8] overflow-hidden font-serif">
-                {/* Back Button - Floating */}
+        <div className="fixed inset-0 w-full h-full flex items-center justify-center font-serif overflow-hidden overscroll-none touch-pan-y">
+            <style jsx global>{`
+                @import url("https://fonts.googleapis.com/css2?family=Gochi+Hand&display=swap");
+
+                .canva-sans {
+                    font-family: "Gochi Hand", "Arial", sans-serif;
+                }
+
+                .palatino {
+                    font-family: "Palatino", "Book Antiqua", serif;
+                }
+            `}</style>
+
+            <main className="relative h-full w-full overflow-hidden font-serif transition-all duration-1000">
+                {/* Welcome Page */}
+                <div
+                    className="absolute inset-0 w-full h-full flex items-center justify-center transition-opacity duration-1000 cursor-pointer"
+                    onClick={handleWelcomeClick}
+                    style={{
+                        backgroundImage:
+                            "url('/teapai/background_welcome.PNG')",
+                        backgroundSize: "100% 100%",
+                        backgroundPosition: "center",
+                        backgroundRepeat: "no-repeat",
+                        opacity: pageState === "welcome" ? 1 : 0,
+                        pointerEvents:
+                            pageState === "welcome" ? "auto" : "none",
+                        zIndex: pageState === "welcome" ? 20 : 10,
+                    }}
+                >
+                    <div className="text-center space-y-8 p-8 animate-fade-in pointer-events-none">
+                        <h2 className="canva-sans text-3xl md:text-4xl text-[#333] tracking-wider font-normal">
+                            THE ENGAGEMENT OF
+                        </h2>
+                        <h1 className="palatino text-7xl md:text-8xl text-[#8B0000] font-bold tracking-wide">
+                            OBE & FELI
+                        </h1>
+                        <div className="canva-sans space-y-2">
+                            <p className="text-4xl md:text-5xl font-semibold text-[#333] tracking-widest">
+                                15 MARCH 2026
+                            </p>
+                            <p className="text-2xl md:text-3xl text-[#333] tracking-wide">
+                                Moi Village Restaurant
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* QR Scanner Background */}
+                <div
+                    className="absolute inset-0 w-full h-full transition-opacity duration-1000"
+                    style={{
+                        backgroundImage: "url('/teapai/background_qr.PNG')",
+                        backgroundSize: "100% 100%",
+                        backgroundPosition: "center",
+                        backgroundRepeat: "no-repeat",
+                        opacity: pageState === "scanner" ? 1 : 0,
+                        pointerEvents:
+                            pageState === "scanner" ? "auto" : "none",
+                        zIndex: pageState === "scanner" ? 20 : 10,
+                    }}
+                />
+
+                {/* Form Background */}
+                <div
+                    className="absolute inset-0 w-full h-full transition-opacity duration-1000"
+                    style={{
+                        backgroundImage: "url('/teapai/background_qr.PNG')",
+                        backgroundSize: "100% 100%",
+                        backgroundPosition: "center",
+                        backgroundRepeat: "no-repeat",
+                        opacity: pageState === "form" ? 1 : 0,
+                        pointerEvents: pageState === "form" ? "auto" : "none",
+                        zIndex: pageState === "form" ? 20 : 10,
+                    }}
+                />
+
+                {/* Back Button - Always visible */}
                 <button
                     onClick={() => router.push("/superadmin")}
                     className="absolute top-4 left-4 z-[60] bg-white/80 backdrop-blur-sm hover:bg-white text-slate-700 px-4 py-2 rounded-full shadow-lg transition font-sans text-sm font-semibold"
@@ -207,26 +306,23 @@ export default function ScannerPage() {
                     ← Back
                 </button>
 
-                {/* Content Container */}
-                <div className="relative z-10 h-full w-full flex flex-col items-center justify-center px-6">
-                    {/* Header */}
-                    {/* <div className="text-center mb-8">
-                        <h1 className="text-3xl font-bold text-[#b4352a] mb-2 drop-shadow-sm">
-                            QR Scanner
-                        </h1>
-                        <p className="text-slate-600 text-sm">
-                            Scan guest invitation QR code
-                        </p>
-                    </div> */}
-
+                {/* Content Container - Only show when not on welcome page */}
+                <div
+                    className="relative z-30 h-full w-full flex flex-col items-center justify-center px-6 transition-opacity duration-1000"
+                    style={{
+                        opacity: pageState !== "welcome" ? 1 : 0,
+                        pointerEvents:
+                            pageState !== "welcome" ? "auto" : "none",
+                    }}
+                >
                     {/* Scanner or Form */}
                     <div className="space-y-6">
-                        {scanning && (
-                            <div className="space-y-6">
+                        {pageState === "scanner" && scanning && (
+                            <div className="space-y-6 transition-opacity duration-500">
                                 {/* Camera View - Full Screen with Centered Square */}
-                                <div className="fixed inset-0 bg-[#fbf6e8] z-40 flex items-center justify-center">
+                                <div className="fixed inset-0 z-40 flex items-center justify-center">
                                     <div
-                                        className="relative bg-black overflow-hidden rounded-2xl"
+                                        className="relative bg-black overflow-hidden rounded-2xl shadow-2xl"
                                         style={{
                                             width: "min(40vw, 40vh)",
                                             height: "min(40vw, 40vh)",
@@ -288,7 +384,7 @@ export default function ScannerPage() {
                         )}
 
                         {loading && (
-                            <div className="flex flex-col items-center justify-center py-16">
+                            <div className="flex flex-col items-center justify-center py-16 transition-opacity duration-500">
                                 <div className="w-16 h-16 border-4 border-[#b4352a] border-t-transparent rounded-full animate-spin mb-4"></div>
                                 <p className="text-slate-600 font-semibold">
                                     Loading invitation...
@@ -296,13 +392,18 @@ export default function ScannerPage() {
                             </div>
                         )}
 
-                        {!scanning && !loading && data && (
-                            <div className="space-y-6">
+                        {pageState === "form" && !loading && data && (
+                            <div className="space-y-6 transition-opacity duration-1000">
                                 {/* Guest Welcome */}
                                 <div className="text-center py-4">
                                     <h2 className="text-3xl font-bold text-[#6d4c41]">
-                                        Welcome,{" "}
+                                        Welcome,
+                                    </h2>
+                                    <h2 className="text-6xl mt-5 font-bold text-[#6d4c41]">
                                         {data.display_name || data.name}
+                                    </h2>
+                                    <h2 className="text-3xl mt-8 font-bold text-[#6d4c41]">
+                                        {data.invitation_side}
                                     </h2>
                                 </div>
 
@@ -313,12 +414,23 @@ export default function ScannerPage() {
                                 )}
 
                                 {/* Attendance Form */}
-                                <div className="p-6 space-y-6">
+                                <div className="p-6 space-y-8">
                                     <div>
-                                        <label className="block text-xl font-bold text-[#6d4c41] mb-2 text-center">
-                                            Attendance
+                                        <label className="block text-2xl font-bold text-[#6d4c41] mb-4 text-center">
+                                            {data.invitation_side
+                                                .charAt(0)
+                                                .toUpperCase()}
+                                            {data.type.charAt(0).toUpperCase()}
+                                            {data.id
+                                                .toFixed(0)
+                                                .padStart(3, "0")}
                                         </label>
-                                        <div className="flex items-center justify-center gap-4">
+                                        <div
+                                            className="relative mx-auto"
+                                            style={{
+                                                width: formSizes.input.width,
+                                            }}
+                                        >
                                             <button
                                                 type="button"
                                                 onClick={() =>
@@ -329,7 +441,16 @@ export default function ScannerPage() {
                                                         ),
                                                     )
                                                 }
-                                                className="w-12 h-12 flex items-center justify-center bg-white border-2 border-[#6d4c41] text-[#6d4c41] rounded-lg hover:bg-[#6d4c41] hover:text-white transition text-2xl font-bold"
+                                                className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center bg-transparent text-[#6d4c41] hover:bg-[#6d4c41] hover:text-white rounded-lg transition font-bold z-10"
+                                                style={{
+                                                    width: formSizes.input
+                                                        .buttonSize,
+                                                    height: formSizes.input
+                                                        .buttonSize,
+                                                    fontSize:
+                                                        formSizes.input
+                                                            .fontSize,
+                                                }}
                                             >
                                                 −
                                             </button>
@@ -346,7 +467,16 @@ export default function ScannerPage() {
                                                     )
                                                 }
                                                 readOnly
-                                                className="text-black w-32 px-4 py-4 border-2 border-[#6d4c41] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#b4352a] focus:border-transparent text-3xl font-bold text-center bg-white"
+                                                className="text-black w-full border-2 border-[#6d4c41] rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#b4352a] focus:border-transparent font-bold text-center bg-white"
+                                                style={{
+                                                    height: formSizes.input
+                                                        .height,
+                                                    fontSize:
+                                                        formSizes.input
+                                                            .fontSize,
+                                                    paddingLeft: `calc(${formSizes.input.buttonSize} + 12px)`,
+                                                    paddingRight: `calc(${formSizes.input.buttonSize} + 12px)`,
+                                                }}
                                             />
                                             <button
                                                 type="button"
@@ -359,7 +489,16 @@ export default function ScannerPage() {
                                                         ),
                                                     )
                                                 }
-                                                className="w-12 h-12 flex items-center justify-center bg-white border-2 border-[#6d4c41] text-[#6d4c41] rounded-lg hover:bg-[#6d4c41] hover:text-white transition text-2xl font-bold"
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center bg-transparent text-[#6d4c41] hover:bg-[#6d4c41] hover:text-white rounded-lg transition font-bold z-10"
+                                                style={{
+                                                    width: formSizes.input
+                                                        .buttonSize,
+                                                    height: formSizes.input
+                                                        .buttonSize,
+                                                    fontSize:
+                                                        formSizes.input
+                                                            .fontSize,
+                                                }}
                                             >
                                                 +
                                             </button>
@@ -367,32 +506,47 @@ export default function ScannerPage() {
                                     </div>
 
                                     <div>
-                                        <label className="block text-xl font-bold text-[#6d4c41] mb-1 text-center">
-                                            Gift
-                                        </label>
                                         <div className="flex items-center justify-center">
                                             <button
                                                 type="button"
                                                 onClick={() =>
                                                     setGaveGift(!gaveGift)
                                                 }
-                                                className="relative inline-flex items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#b4352a] focus:ring-offset-2"
+                                                className="relative inline-flex items-center rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-[#b4352a] focus:ring-offset-2 p-1"
                                                 style={{
-                                                    height: `${toggleHeight}px`,
-                                                    width: `${toggleWidth}px`,
+                                                    width: formSizes.toggle
+                                                        .width,
+                                                    height: formSizes.toggle
+                                                        .height,
                                                     backgroundColor: gaveGift
-                                                        ? "#b4352a"
-                                                        : "#d1d5db",
+                                                        ? "#4caf50"
+                                                        : "#6d4c41",
                                                 }}
                                             >
                                                 <span
-                                                    className="inline-block rounded-full bg-white shadow-lg transition-transform"
+                                                    className="inline-flex items-center justify-center bg-white shadow-lg transition-all duration-300 rounded-full"
                                                     style={{
-                                                        height: `${toggleCircle}px`,
-                                                        width: `${toggleCircle}px`,
-                                                        transform: `translateX(${gaveGift ? toggleTranslateOn : toggleTranslateOff}px)`,
+                                                        height: formSizes.toggle
+                                                            .iconSize,
+                                                        width: formSizes.toggle
+                                                            .iconSize,
+                                                        transform: gaveGift
+                                                            ? `translateX(calc(${formSizes.toggle.width} - ${formSizes.toggle.iconSize} - 8px))`
+                                                            : "translateX(0px)",
                                                     }}
-                                                />
+                                                >
+                                                    <svg
+                                                        className="text-[#6d4c41]"
+                                                        fill="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                        style={{
+                                                            width: `calc(${formSizes.toggle.iconSize} * 0.57)`,
+                                                            height: `calc(${formSizes.toggle.iconSize} * 0.57)`,
+                                                        }}
+                                                    >
+                                                        <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+                                                    </svg>
+                                                </span>
                                             </button>
                                         </div>
                                     </div>

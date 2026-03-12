@@ -19,8 +19,10 @@ export async function GET(req: NextRequest) {
             token: "TEST-" + Date.now(),
             name: "Test Guest",
             displayName: "Test Guest",
+            side: "pagi",
+            rsvp: 3,
             actualAttendance: 2,
-            gaveGift: true,
+            tableNumber: "T-10",
         };
 
         if (isPrint) {

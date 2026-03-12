@@ -17,6 +17,7 @@ export interface TeapaiRecord extends RowDataPacket {
     responded_at: Date | null;
     teapai: "pagi" | "malam" | null;
     gave_gift: number;
+    table: string | null;
     admin_note: string | null;
     created_by: string | null;
     submitted_ip: string | null;

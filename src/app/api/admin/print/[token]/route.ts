@@ -26,11 +26,13 @@ export async function POST(
 
         // Send to printer
         await sendToPrinter({
-            token: guestData.token,
+            token: guestData.url_token,
             name: guestData.name,
-            displayName: guestData.displayName,
-            actualAttendance: guestData.actualAttendance || 0,
-            gaveGift: guestData.gaveGift || false,
+            displayName: guestData.display_name || guestData.name,
+            side: guestData.teapai || "pagi",
+            rsvp: guestData.expected_attendance || 0,
+            actualAttendance: guestData.actual_attendance || 0,
+            tableNumber: guestData.table || "",
         });
 
         return NextResponse.json({

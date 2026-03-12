@@ -88,9 +88,11 @@ export async function PATCH(
             await sendToPrinter({
                 token,
                 name: updatedData.name,
-                displayName: updatedData.display_name,
+                displayName: updatedData.display_name || updatedData.name,
+                side: updatedData.teapai || "pagi",
+                rsvp: updatedData.expected_attendance || 0,
                 actualAttendance: updatedData.actual_attendance || 0,
-                gaveGift: updatedData.gave_gift === 1,
+                tableNumber: updatedData.table || "",
             });
         }
 

@@ -13,6 +13,7 @@ const navLinks: NavLink[] = [
     { href: "/superadmin", label: "Wedding Invitations" },
     { href: "/superadmin/teapai", label: "Engagement Master" },
     { href: "/superadmin/report/teapai", label: "Engagement Analytics" },
+    { href: "/superadmin/tables", label: "Table Assignment" },
     { href: "/superadmin/scan", label: "QR Scanner" },
     {
         href: "/superadmin/print/test",
@@ -28,17 +29,21 @@ type AdminNavbarProps = {
 export function AdminNavbar({ className = "" }: AdminNavbarProps) {
     const pathname = usePathname();
 
+    const isLinkActive = (href: string) => {
+        // Exact match for base superadmin route
+        if (href === "/superadmin") {
+            return pathname === "/superadmin";
+        }
+        // For other routes, match exact or sub-routes
+        return pathname === href || pathname.startsWith(href + "/");
+    };
+
     return (
         <nav
             className={`flex items-center gap-1 bg-white p-1 rounded-2xl shadow-sm border border-slate-200 flex-wrap ${className}`}
         >
             {navLinks.map((link) => {
-                const isActive =
-                    pathname === link.href ||
-                    (link.href.includes("/scan") &&
-                        pathname === "/superadmin/scan") ||
-                    (link.href.includes("/print/test") &&
-                        pathname === "/superadmin/print/test");
+                const isActive = isLinkActive(link.href);
 
                 return (
                     <Link
