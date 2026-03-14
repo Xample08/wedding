@@ -69,7 +69,7 @@ export default function ScannerPage() {
         setWelcomeDragOffsetY(0);
         setTimeout(() => {
             setIsUnlockingWelcome(false);
-        }, 750);
+        }, 1300);
     };
 
     const handleWelcomePointerDown = (
@@ -78,6 +78,7 @@ export default function ScannerPage() {
         if (pageState !== "welcome" || isUnlockingWelcome) return;
         setIsDraggingWelcome(true);
         setWelcomeDragStartY(e.clientY);
+        setWelcomeDragOffsetY(0);
         (e.currentTarget as HTMLDivElement).setPointerCapture?.(e.pointerId);
     };
 
@@ -389,7 +390,7 @@ export default function ScannerPage() {
             <main className="relative h-full w-full overflow-hidden font-serif transition-all duration-1000">
                 {/* Welcome Page */}
                 <div
-                    className="absolute inset-0 w-full h-full flex items-center justify-center transition-opacity duration-1000 cursor-grab active:cursor-grabbing touch-none"
+                    className="absolute inset-0 w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing touch-none"
                     onPointerDown={handleWelcomePointerDown}
                     onPointerMove={handleWelcomePointerMove}
                     onPointerUp={handleWelcomePointerEnd}
@@ -402,24 +403,16 @@ export default function ScannerPage() {
                         backgroundSize: "100% 100%",
                         backgroundPosition: "center",
                         backgroundRepeat: "no-repeat",
-                        opacity:
-                            pageState === "welcome" || isUnlockingWelcome
-                                ? 1
-                                : 0,
+                        transform:
+                            isUnlockingWelcome || pageState === "scanner"
+                                ? "translateY(-100%)"
+                                : "translateY(0)",
                         pointerEvents:
                             pageState === "welcome" && !isUnlockingWelcome
                                 ? "auto"
                                 : "none",
-                        zIndex:
-                            pageState === "welcome" || isUnlockingWelcome
-                                ? 20
-                                : 10,
-                        transform: isUnlockingWelcome
-                            ? "translateY(-100%)"
-                            : `translateY(${welcomeDragOffsetY}px)`,
-                        transition: isDraggingWelcome
-                            ? "none"
-                            : "transform 750ms cubic-bezier(0.22, 1, 0.36, 1), opacity 750ms ease",
+                        zIndex: 10,
+                        transition: "transform 1200ms ease-in-out",
                     }}
                 >
                     <div className="relative h-full w-full pointer-events-none animate-fade-in">
@@ -461,33 +454,26 @@ export default function ScannerPage() {
                                     strokeLinejoin="round"
                                 />
                             </svg>
-                            <p className="mt-1 text-[11px] md:text-xs text-[#a00] palr45w whitespace-nowrap">
-                                Slide up to continue
-                            </p>
                         </div>
                     </div>
                 </div>
 
                 {/* QR Scanner Background */}
                 <div
-                    className="absolute inset-0 w-full h-full transition-opacity duration-1000"
+                    className="absolute inset-0 w-full h-full"
                     style={{
                         backgroundImage: "url('/teapai/background_qr.PNG')",
                         backgroundSize: "100% 100%",
                         backgroundPosition: "center",
                         backgroundRepeat: "no-repeat",
-                        opacity:
-                            pageState === "scanner" ||
-                            isDraggingWelcome ||
-                            isUnlockingWelcome
-                                ? 1
-                                : 0,
                         pointerEvents:
                             pageState === "scanner" ? "auto" : "none",
-                        zIndex: pageState === "scanner" ? 20 : 10,
-                        transition: isDraggingWelcome
-                            ? "none"
-                            : "opacity 1000ms ease",
+                        zIndex: 10,
+                        transform:
+                            isUnlockingWelcome || pageState === "scanner"
+                                ? "translateY(0)"
+                                : "translateY(100%)",
+                        transition: "transform 1200ms ease-in-out",
                     }}
                 />
 
