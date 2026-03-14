@@ -20,6 +20,7 @@ export default function ScannerPage() {
     const router = useRouter();
     const [pageState, setPageState] = useState<PageState>("welcome");
     const [isUnlockingWelcome, setIsUnlockingWelcome] = useState(false);
+    const [welcomeAnimationDone, setWelcomeAnimationDone] = useState(false);
     const [isDraggingWelcome, setIsDraggingWelcome] = useState(false);
     const [welcomeDragOffsetY, setWelcomeDragOffsetY] = useState(0);
     const [welcomeDragStartY, setWelcomeDragStartY] = useState<number | null>(
@@ -69,6 +70,7 @@ export default function ScannerPage() {
         setWelcomeDragOffsetY(0);
         setTimeout(() => {
             setIsUnlockingWelcome(false);
+            setWelcomeAnimationDone(true);
         }, 1300);
     };
 
@@ -403,16 +405,24 @@ export default function ScannerPage() {
                         backgroundSize: "100% 100%",
                         backgroundPosition: "center",
                         backgroundRepeat: "no-repeat",
-                        transform:
-                            isUnlockingWelcome || pageState === "scanner"
-                                ? "translateY(-100%)"
-                                : "translateY(0)",
+                        opacity: welcomeAnimationDone
+                            ? pageState === "welcome"
+                                ? 1
+                                : 0
+                            : 1,
+                        transform: welcomeAnimationDone
+                            ? "translateY(0)"
+                            : isUnlockingWelcome || pageState === "scanner"
+                              ? "translateY(-100%)"
+                              : "translateY(0)",
                         pointerEvents:
                             pageState === "welcome" && !isUnlockingWelcome
                                 ? "auto"
                                 : "none",
                         zIndex: 10,
-                        transition: "transform 1200ms ease-in-out",
+                        transition: welcomeAnimationDone
+                            ? "opacity 600ms ease"
+                            : "transform 1200ms ease-in-out",
                     }}
                 >
                     <div className="relative h-full w-full pointer-events-none animate-fade-in">
@@ -469,11 +479,19 @@ export default function ScannerPage() {
                         pointerEvents:
                             pageState === "scanner" ? "auto" : "none",
                         zIndex: 10,
-                        transform:
-                            isUnlockingWelcome || pageState === "scanner"
-                                ? "translateY(0)"
-                                : "translateY(100%)",
-                        transition: "transform 1200ms ease-in-out",
+                        opacity: welcomeAnimationDone
+                            ? pageState === "scanner"
+                                ? 1
+                                : 0
+                            : 1,
+                        transform: welcomeAnimationDone
+                            ? "translateY(0)"
+                            : isUnlockingWelcome || pageState === "scanner"
+                              ? "translateY(0)"
+                              : "translateY(100%)",
+                        transition: welcomeAnimationDone
+                            ? "opacity 600ms ease"
+                            : "transform 1200ms ease-in-out",
                     }}
                 />
 
@@ -607,10 +625,10 @@ export default function ScannerPage() {
                                         })()}
                                         {showDropdown &&
                                             searchResults.length === 0 &&
-                                            nameQuery.length > 1 &&
+                                            nameQuery.trim().length > 0 &&
                                             !searchLoading && (
                                                 <div className="absolute bottom-full mb-2 left-0 right-0 bg-white/95 backdrop-blur-sm border-2 border-[#b4352a] rounded-xl shadow-2xl px-4 py-3 text-center text-[#6d4c41] text-sm palr45w">
-                                                    No guests found
+                                                    No result
                                                 </div>
                                             )}
 

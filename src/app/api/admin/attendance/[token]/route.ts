@@ -3,6 +3,17 @@ import { requireAdmin } from "@/middlewares/auth";
 import { getTeapaiByToken, markAttendance } from "@/services/teapaiService";
 import { getAuthCookieName, verifySessionToken } from "@/utils/session";
 
+function toMySqlTimestamp(date: Date = new Date()): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const seconds = String(date.getSeconds()).padStart(2, "0");
+
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
 // GET: Fetch teapai invitation details
 export async function GET(
     req: NextRequest,
@@ -78,7 +89,7 @@ export async function PATCH(
             actual_attendance: attendance,
             gave_gift,
             attended_by: session.username,
-            attended_at: new Date().toISOString(),
+            attended_at: toMySqlTimestamp(),
         });
 
         if (!success) {
