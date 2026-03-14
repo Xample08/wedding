@@ -19,7 +19,7 @@ export async function sendToPrinter(data: {
         };
 
         const response = await fetch(
-            process.env.PRINTER_API_URL || "http://localhost:4000/print",
+            process.env.PRINTER_API_URL || "http://localhost:4000/barcode",
             {
                 method: "POST",
                 headers: {

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/middlewares/auth";
 import { getTeapaiByToken, markAttendance } from "@/services/teapaiService";
 import { getAuthCookieName, verifySessionToken } from "@/utils/session";
-import { sendToPrinter } from "@/utils/printer";
 
 // GET: Fetch teapai invitation details
 export async function GET(
@@ -73,6 +72,7 @@ export async function PATCH(
             actual_attendance: attendance,
             gave_gift,
             attended_by: session.username,
+            attended_at: new Date().toISOString(),
         });
 
         if (!success) {
@@ -80,20 +80,6 @@ export async function PATCH(
                 { error: "Failed to mark attendance" },
                 { status: 500 },
             );
-        }
-
-        // Get updated data for printer
-        const updatedData = await getTeapaiByToken(token);
-        if (updatedData) {
-            await sendToPrinter({
-                token,
-                name: updatedData.name,
-                displayName: updatedData.display_name || updatedData.name,
-                side: updatedData.teapai || "pagi",
-                rsvp: updatedData.expected_attendance || 0,
-                actualAttendance: updatedData.actual_attendance || 0,
-                tableNumber: updatedData.table || "",
-            });
         }
 
         return NextResponse.json({ success: true });

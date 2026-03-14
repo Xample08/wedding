@@ -115,8 +115,8 @@ export async function createInvitation(input: {
                 input.numberOfGuests,
                 input.isFamily ? 1 : 0,
                 input.type,
-            ]
-        )
+            ],
+        ),
     );
 }
 
@@ -128,8 +128,8 @@ export async function superadminListInvitations(): Promise<
             `SELECT url_token, name, display_name, number_of_guests, is_family, type, is_attending, responded_at, created_at
              FROM invitations
              WHERE deleted_at IS NULL
-             ORDER BY created_at DESC`
-        )
+             ORDER BY created_at DESC`,
+        ),
     );
 
     return (rows as any[]).map(rowToSuperadmin);
@@ -141,14 +141,14 @@ export async function softDeleteInvitation(urlToken: string): Promise<boolean> {
             `UPDATE invitations
              SET deleted_at = NOW(), updated_at = NOW()
              WHERE url_token = ? AND deleted_at IS NULL`,
-            [urlToken]
-        )
+            [urlToken],
+        ),
     );
     return result.affectedRows > 0;
 }
 
 export async function getInvitationByToken(
-    urlToken: string
+    urlToken: string,
 ): Promise<InvitationPublic | null> {
     const [rows] = await retryDbOperation(() =>
         pool.execute(
@@ -156,8 +156,8 @@ export async function getInvitationByToken(
              FROM invitations
              WHERE url_token = ? AND deleted_at IS NULL
              LIMIT 1`,
-            [urlToken]
-        )
+            [urlToken],
+        ),
     );
     const row = (rows as any[])[0];
     if (!row) return null;
@@ -201,16 +201,16 @@ export async function submitGuestRsvp(input: {
                 input.submittedIp,
                 input.userAgent,
                 input.urlToken,
-            ]
-        )
+            ],
+        ),
     );
 
     if (result.affectedRows > 0) {
         const [rows] = await retryDbOperation(() =>
             pool.execute(
                 `SELECT responded_at FROM invitations WHERE url_token = ? LIMIT 1`,
-                [input.urlToken]
-            )
+                [input.urlToken],
+            ),
         );
         const respondedAt = (rows as any[])[0]?.responded_at;
         return { ok: true, respondedAt: String(respondedAt ?? "") };
@@ -222,8 +222,8 @@ export async function submitGuestRsvp(input: {
              FROM invitations
              WHERE url_token = ? AND deleted_at IS NULL
              LIMIT 1`,
-            [input.urlToken]
-        )
+            [input.urlToken],
+        ),
     );
     const row = (rows as any[])[0];
     if (!row) return { ok: false, reason: "not_found" };
@@ -246,8 +246,8 @@ export async function updateGuestRsvp(input: {
     const [currentRows] = await retryDbOperation(() =>
         pool.execute(
             `SELECT wishes FROM invitations WHERE url_token = ? AND deleted_at IS NULL LIMIT 1`,
-            [input.urlToken]
-        )
+            [input.urlToken],
+        ),
     );
     const currentRow = (currentRows as any[])[0];
     if (!currentRow) return { ok: false, reason: "not_found" };
@@ -279,8 +279,8 @@ export async function updateGuestRsvp(input: {
                 input.userAgent,
                 wishesChanged ? 1 : 0,
                 input.urlToken,
-            ]
-        )
+            ],
+        ),
     );
 
     if (result.affectedRows > 0) {
@@ -320,8 +320,8 @@ export async function adminUpdateInvitation(input: {
         pool.execute<ResultSetHeader>(
             `UPDATE invitations SET ${sets.join(", ")}
              WHERE url_token = ? AND deleted_at IS NULL`,
-            [...params, input.urlToken]
-        )
+            [...params, input.urlToken],
+        ),
     );
 
     return result.affectedRows > 0;
@@ -355,11 +355,51 @@ export async function adminListInvitations(filters: {
              FROM invitations
              WHERE ${where.join(" AND ")}
              ORDER BY created_at DESC`,
-            params
-        )
+            params,
+        ),
     );
 
     return (rows as any[]).map(rowToAdmin);
+}
+
+export async function searchInvitationsByName(
+    query: string,
+): Promise<
+    Array<{ url_token: string; name: string; display_name: string | null }>
+> {
+    let rows: any[];
+    if (query.trim().length === 0) {
+        // Return all guests for the initial "show all" dropdown
+        const [result] = await retryDbOperation(() =>
+            pool.execute(
+                `SELECT url_token, name, display_name
+                 FROM teapai
+                 WHERE deleted_at IS NULL
+                 ORDER BY name ASC`,
+            ),
+        );
+        rows = result as any[];
+    } else {
+        const pattern = `%${query}%`;
+        const [result] = await retryDbOperation(() =>
+            pool.execute(
+                `SELECT url_token, name, display_name
+                 FROM teapai
+                 WHERE deleted_at IS NULL
+                   AND (name LIKE ? OR display_name LIKE ?)
+                 ORDER BY name ASC
+                 LIMIT 10`,
+                [pattern, pattern],
+            ),
+        );
+        rows = result as any[];
+    }
+    return rows.map((row) => ({
+        url_token: String(row.url_token),
+        name: String(row.name),
+        display_name:
+            row.display_name == null ? null : String(row.display_name),
+    }));
 }
 
 export async function adminSummary(filters: {
@@ -405,8 +445,8 @@ export async function adminSummary(filters: {
                 SUM(CASE WHEN (is_attending = 1 OR gave_gift = 1) THEN 1 ELSE 0 END) AS souvenir_count
              FROM invitations
              WHERE ${where.join(" AND ")}`,
-            params
-        )
+            params,
+        ),
     );
 
     const row = (rows as any[])[0] || {};
@@ -438,8 +478,8 @@ export async function getPublicWishes(): Promise<WishPublic[]> {
                AND wishes IS NOT NULL
                AND wishes != ''
                AND deleted_at IS NULL
-             ORDER BY responded_at DESC`
-        )
+             ORDER BY responded_at DESC`,
+        ),
     );
 
     return (rows as any[]).map((row) => ({

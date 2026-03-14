@@ -142,6 +142,7 @@ export async function markAttendance(
         actual_attendance: number;
         gave_gift: number;
         attended_by: string;
+        attended_at: string;
     },
 ): Promise<boolean> {
     const [result] = await pool.execute<ResultSetHeader>(

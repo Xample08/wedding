@@ -31,8 +31,18 @@ export default function ScannerPage() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const scanIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-    // Manual token input for testing
-    const [manualToken, setManualToken] = useState("");
+    // Name search
+    const [nameQuery, setNameQuery] = useState("");
+    const [allGuests, setAllGuests] = useState<
+        { url_token: string; name: string; display_name: string | null }[]
+    >([]);
+    const [searchResults, setSearchResults] = useState<
+        { url_token: string; name: string; display_name: string | null }[]
+    >([]);
+    const [showDropdown, setShowDropdown] = useState(false);
+    const [searchLoading, setSearchLoading] = useState(false);
+    const allGuestsFetchedRef = useRef(false);
+    const searchDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
         if (pageState === "scanner" && scanning) {
@@ -128,12 +138,56 @@ export default function ScannerPage() {
         await fetchInvitationData(scannedToken);
     };
 
-    const handleManualSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!manualToken.trim()) return;
+    const fetchAllGuests = async () => {
+        if (allGuestsFetchedRef.current) return;
+        allGuestsFetchedRef.current = true;
+        try {
+            const res = await fetch(`/api/admin/invitations/search?q=`);
+            const json = await res.json();
+            if (res.ok) setAllGuests(json.data ?? []);
+        } catch {
+            // silent
+        }
+    };
+
+    const handleInputFocus = async () => {
+        await fetchAllGuests();
+        setShowDropdown(true);
+    };
+
+    const handleNameQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value;
+        setNameQuery(val);
+        if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+        if (val.trim().length < 1) {
+            setSearchResults([]);
+            setShowDropdown(true); // keep open to show allGuests
+            return;
+        }
+        setSearchLoading(true);
+        searchDebounceRef.current = setTimeout(async () => {
+            try {
+                const res = await fetch(
+                    `/api/admin/invitations/search?q=${encodeURIComponent(val.trim())}`,
+                );
+                const json = await res.json();
+                setSearchResults(res.ok ? json.data : []);
+                setShowDropdown(true);
+            } catch {
+                setSearchResults([]);
+            } finally {
+                setSearchLoading(false);
+            }
+        }, 300);
+    };
+
+    const handleSelectGuest = async (selectedToken: string) => {
+        setShowDropdown(false);
+        setNameQuery("");
+        setSearchResults([]);
         setScanning(false);
         stopCamera();
-        await fetchInvitationData(manualToken.trim());
+        await fetchInvitationData(selectedToken);
     };
 
     const fetchInvitationData = async (scannedToken: string) => {
@@ -176,7 +230,6 @@ export default function ScannerPage() {
                     method: "POST",
                 });
                 // Success - reset and go back to scanning
-                alert("Attendance marked successfully!");
                 resetScanner();
             } else {
                 const json = await res.json();
@@ -199,7 +252,9 @@ export default function ScannerPage() {
         setAttendance(1);
         setGaveGift(false);
         setError(null);
-        setManualToken("");
+        setNameQuery("");
+        setSearchResults([]);
+        setShowDropdown(false);
         setPageState("welcome");
         setScanning(false);
     };
@@ -225,12 +280,37 @@ export default function ScannerPage() {
             <style jsx global>{`
                 @import url("https://fonts.googleapis.com/css2?family=Gochi+Hand&display=swap");
 
+                @font-face {
+                    font-family: "Palr45w";
+                    src: url("/teapai/fonts/palr45w.ttf") format("truetype");
+                    font-weight: 400;
+                    font-style: normal;
+                }
+
                 .canva-sans {
                     font-family: "Gochi Hand", "Arial", sans-serif;
                 }
 
+                .palr45w {
+                    font-family: "Palr45w", "Palatino", "Book Antiqua", serif;
+                }
+
                 .palatino {
                     font-family: "Palatino", "Book Antiqua", serif;
+                }
+
+                @keyframes welcome-arrow-bounce {
+                    0%,
+                    100% {
+                        transform: translateY(0);
+                    }
+                    50% {
+                        transform: translateY(12px);
+                    }
+                }
+
+                .welcome-arrow-bounce {
+                    animation: welcome-arrow-bounce 1.2s ease-in-out infinite;
                 }
             `}</style>
 
@@ -242,6 +322,7 @@ export default function ScannerPage() {
                     style={{
                         backgroundImage:
                             "url('/teapai/background_welcome.PNG')",
+                        // "url('/teapai/front.jpg')",
                         backgroundSize: "100% 100%",
                         backgroundPosition: "center",
                         backgroundRepeat: "no-repeat",
@@ -251,20 +332,45 @@ export default function ScannerPage() {
                         zIndex: pageState === "welcome" ? 20 : 10,
                     }}
                 >
-                    <div className="text-center space-y-8 p-8 animate-fade-in pointer-events-none">
-                        <h2 className="canva-sans text-3xl md:text-4xl text-[#333] tracking-wider font-normal">
-                            THE ENGAGEMENT OF
-                        </h2>
-                        <h1 className="palatino text-7xl md:text-8xl text-[#8B0000] font-bold tracking-wide">
-                            OBE & FELI
-                        </h1>
-                        <div className="canva-sans space-y-2">
-                            <p className="text-4xl md:text-5xl font-semibold text-[#333] tracking-widest">
+                    <div className="relative h-full w-full pointer-events-none animate-fade-in">
+                        <div className="h-full w-full flex flex-col items-center justify-start text-center px-6 py-50 md:pb-28">
+                            <h2 className="palr45w text-[#111] font-bold md:mt-18 md:text-[33px]">
+                                THE ENGAGEMENT OF
+                            </h2>
+                            <h1 className="palr45w text-[#c00707] font-bold md:mt-2 md:text-[80px]">
+                                OBE & FELI
+                            </h1>
+                            <p className="palr45w text-[#111] font-bold md:mt-5 md:text-[35px]">
                                 15 MARCH 2026
                             </p>
-                            <p className="text-2xl md:text-3xl text-[#333] tracking-wide">
+                            <p className="palr45w text-[#111] font-bold md:mt-23 md:text-[35px]">
                                 Moi Village Restaurant
                             </p>
+                        </div>
+
+                        <div className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 welcome-arrow-bounce text-[#c00707]">
+                            <svg
+                                width="56"
+                                height="56"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path
+                                    d="M6 8L12 13L18 8"
+                                    stroke="currentColor"
+                                    strokeWidth="2.6"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                                <path
+                                    d="M6 13L12 18L18 13"
+                                    stroke="currentColor"
+                                    strokeWidth="2.6"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                            </svg>
                         </div>
                     </div>
                 </div>
@@ -299,12 +405,12 @@ export default function ScannerPage() {
                 />
 
                 {/* Back Button - Always visible */}
-                <button
+                {/* <button
                     onClick={() => router.push("/superadmin")}
                     className="absolute top-4 left-4 z-[60] bg-white/80 backdrop-blur-sm hover:bg-white text-slate-700 px-4 py-2 rounded-full shadow-lg transition font-sans text-sm font-semibold"
                 >
                     ← Back
-                </button>
+                </button> */}
 
                 {/* Content Container - Only show when not on welcome page */}
                 <div
@@ -348,31 +454,113 @@ export default function ScannerPage() {
                                     </div>
                                 </div>
 
-                                {/* Manual Input - Overlay */}
-                                <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-sm px-4">
-                                    <p className="text-xs text-slate-600 mb-2 text-center">
-                                        Or enter token manually
-                                    </p>
-                                    <form
-                                        onSubmit={handleManualSubmit}
-                                        className="flex gap-2"
-                                    >
-                                        <input
-                                            type="text"
-                                            value={manualToken}
-                                            onChange={(e) =>
-                                                setManualToken(e.target.value)
-                                            }
-                                            placeholder="Token"
-                                            className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#b4352a] focus:border-transparent bg-white text-center font-mono text-sm text-black"
-                                        />
-                                        <button
-                                            type="submit"
-                                            className="px-4 py-2 bg-[#b4352a] text-white rounded-lg hover:bg-[#8d2a21] transition font-semibold text-sm"
-                                        >
-                                            Go
-                                        </button>
-                                    </form>
+                                {/* Name Search - Overlay */}
+                                <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 w-full max-w-sm px-4">
+                                    <div className="relative">
+                                        {/* Dropdown opens upward */}
+                                        {(() => {
+                                            const listToShow =
+                                                nameQuery.trim().length === 0
+                                                    ? allGuests
+                                                    : searchResults;
+                                            return (
+                                                showDropdown &&
+                                                listToShow.length > 0 && (
+                                                    <div className="absolute bottom-full mb-2 left-0 right-0 bg-white/95 backdrop-blur-sm border-2 border-[#b4352a] rounded-xl shadow-2xl overflow-hidden max-h-56 overflow-y-auto">
+                                                        {listToShow.map(
+                                                            (result) => (
+                                                                <button
+                                                                    key={
+                                                                        result.url_token
+                                                                    }
+                                                                    type="button"
+                                                                    onMouseDown={() =>
+                                                                        handleSelectGuest(
+                                                                            result.url_token,
+                                                                        )
+                                                                    }
+                                                                    className="w-full text-left px-4 py-3 hover:bg-[#b4352a] hover:text-white text-[#6d4c41] transition-colors border-b border-[#b4352a]/20 last:border-b-0"
+                                                                >
+                                                                    <span className="palr45w font-semibold text-sm block leading-tight">
+                                                                        {result.display_name ||
+                                                                            result.name}
+                                                                    </span>
+                                                                    {result.display_name &&
+                                                                        result.display_name !==
+                                                                            result.name && (
+                                                                            <span className="text-xs opacity-50 font-sans">
+                                                                                {
+                                                                                    result.name
+                                                                                }
+                                                                            </span>
+                                                                        )}
+                                                                </button>
+                                                            ),
+                                                        )}
+                                                    </div>
+                                                )
+                                            );
+                                        })()}
+                                        {showDropdown &&
+                                            searchResults.length === 0 &&
+                                            nameQuery.length > 1 &&
+                                            !searchLoading && (
+                                                <div className="absolute bottom-full mb-2 left-0 right-0 bg-white/95 backdrop-blur-sm border-2 border-[#b4352a] rounded-xl shadow-2xl px-4 py-3 text-center text-[#6d4c41] text-sm palr45w">
+                                                    No guests found
+                                                </div>
+                                            )}
+
+                                        {/* Input */}
+                                        <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm border-2 border-[#b4352a] rounded-xl px-3 py-2 shadow-lg">
+                                            {searchLoading ? (
+                                                <div className="w-4 h-4 border-2 border-[#b4352a] border-t-transparent rounded-full animate-spin shrink-0" />
+                                            ) : (
+                                                <svg
+                                                    className="w-4 h-4 text-[#b4352a] shrink-0"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                                    />
+                                                </svg>
+                                            )}
+                                            <input
+                                                type="text"
+                                                value={nameQuery}
+                                                onChange={handleNameQueryChange}
+                                                onFocus={handleInputFocus}
+                                                onBlur={() =>
+                                                    setTimeout(
+                                                        () =>
+                                                            setShowDropdown(
+                                                                false,
+                                                            ),
+                                                        150,
+                                                    )
+                                                }
+                                                placeholder="Search guest name..."
+                                                className="flex-1 bg-transparent focus:outline-none text-[#333] placeholder-[#aaa] palr45w text-sm"
+                                            />
+                                            {nameQuery && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setNameQuery("");
+                                                        setSearchResults([]);
+                                                        setShowDropdown(false);
+                                                    }}
+                                                    className="text-[#aaa] hover:text-[#b4352a] transition shrink-0 text-lg leading-none"
+                                                >
+                                                    ×
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
 
                                 {error && (
@@ -423,7 +611,7 @@ export default function ScannerPage() {
                                             {data.type.charAt(0).toUpperCase()}
                                             {data.id
                                                 .toFixed(0)
-                                                .padStart(3, "0")}
+                                                .padStart(2, "0")}
                                         </label>
                                         <div
                                             className="relative mx-auto"
