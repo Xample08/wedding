@@ -801,7 +801,6 @@ export default function ScannerPage() {
                                             <input
                                                 type="number"
                                                 min="0"
-                                                max={data?.number_of_guests}
                                                 value={attendance}
                                                 onChange={(e) =>
                                                     setAttendance(

@@ -8,10 +8,15 @@ export async function sendToPrinter(data: {
     tableNumber: string;
 }) {
     try {
+        const upperName = data.name.toUpperCase();
+        const upperDisplayName = data.displayName
+            ? data.displayName.toUpperCase()
+            : "";
+
         console.log("[printer] sendToPrinter called", {
             token: data.token,
-            name: data.name,
-            displayName: data.displayName,
+            name: upperName,
+            displayName: upperDisplayName,
             side: data.side,
             rsvp: data.rsvp,
             actualAttendance: data.actualAttendance,
@@ -21,7 +26,7 @@ export async function sendToPrinter(data: {
         // Transform data to match Python Pydantic model
         const printerData = {
             code: data.token,
-            name: data.displayName || data.name,
+            name: upperDisplayName || upperName,
             side: data.side,
             rsvp: data.rsvp,
             actual: data.actualAttendance,
