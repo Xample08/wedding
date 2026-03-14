@@ -34,6 +34,9 @@ export default function ScannerPage() {
     const [attendance, setAttendance] = useState(1);
     const [gaveGift, setGaveGift] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [preferredFacingMode, setPreferredFacingMode] = useState<
+        "user" | "environment" | null
+    >(null);
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const scanIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -58,7 +61,7 @@ export default function ScannerPage() {
         return () => {
             stopCamera();
         };
-    }, [pageState, scanning]);
+    }, [pageState, scanning, preferredFacingMode]);
 
     const triggerWelcomeTransition = () => {
         if (isUnlockingWelcome) return;
@@ -110,18 +113,27 @@ export default function ScannerPage() {
                 /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
                     navigator.userAgent,
                 );
+            const facingMode =
+                preferredFacingMode ??
+                (isMobileDevice ? "user" : "environment");
 
             let stream: MediaStream;
             try {
                 stream = await navigator.mediaDevices.getUserMedia({
                     video: {
-                        facingMode: isMobileDevice ? "user" : "environment",
+                        facingMode: { exact: facingMode },
                     },
                 });
             } catch {
-                stream = await navigator.mediaDevices.getUserMedia({
-                    video: true,
-                });
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode },
+                    });
+                } catch {
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: true,
+                    });
+                }
             }
 
             if (videoRef.current) {
@@ -141,10 +153,23 @@ export default function ScannerPage() {
         if (videoRef.current?.srcObject) {
             const stream = videoRef.current.srcObject as MediaStream;
             stream.getTracks().forEach((track) => track.stop());
+            videoRef.current.srcObject = null;
         }
         if (scanIntervalRef.current) {
             clearInterval(scanIntervalRef.current);
+            scanIntervalRef.current = null;
         }
+    };
+
+    const handleSwitchCamera = () => {
+        const isMobileDevice =
+            /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+                navigator.userAgent,
+            );
+        setPreferredFacingMode((prev) => {
+            const current = prev ?? (isMobileDevice ? "user" : "environment");
+            return current === "user" ? "environment" : "user";
+        });
     };
 
     const startScanning = () => {
@@ -566,6 +591,13 @@ export default function ScannerPage() {
                                             muted
                                             autoPlay
                                         />
+                                        <button
+                                            type="button"
+                                            onClick={handleSwitchCamera}
+                                            className="absolute top-2 right-2 z-20 px-2 py-1 rounded-md bg-black/50 text-white text-[10px] font-semibold backdrop-blur-sm hover:bg-black/65 transition"
+                                        >
+                                            Switch
+                                        </button>
                                         <canvas
                                             ref={canvasRef}
                                             className="hidden"
