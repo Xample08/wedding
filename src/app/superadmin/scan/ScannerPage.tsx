@@ -254,6 +254,8 @@ export default function ScannerPage() {
         setToken(scannedToken);
         setLoading(true);
         setError(null);
+        setIsUnlockingWelcome(false);
+        setWelcomeAnimationDone(true);
         try {
             const res = await fetch(`/api/admin/attendance/${scannedToken}`);
             const json = await res.json();
