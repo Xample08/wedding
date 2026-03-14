@@ -825,11 +825,7 @@ export default function ScannerPage() {
                                                 type="button"
                                                 onClick={() =>
                                                     setAttendance(
-                                                        Math.min(
-                                                            data?.number_of_guests ||
-                                                                attendance + 1,
-                                                            attendance + 1,
-                                                        ),
+                                                        attendance + 1,
                                                     )
                                                 }
                                                 className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center bg-transparent text-[#6d4c41] hover:bg-[#6d4c41] hover:text-white rounded-lg transition font-bold z-10"
