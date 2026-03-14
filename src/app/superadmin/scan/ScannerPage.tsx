@@ -319,10 +319,11 @@ export default function ScannerPage() {
                 }),
             });
             if (res.ok) {
-                // Sent print request
-                await fetch(`/api/admin/print/${token}`, {
-                    method: "POST",
-                });
+                if (gaveGift) {
+                    await fetch(`/api/admin/print/${token}`, {
+                        method: "POST",
+                    });
+                }
                 // Success - reset and go back to scanning
                 resetScanner();
             } else {
