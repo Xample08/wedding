@@ -25,18 +25,20 @@ export async function POST(
         }
 
         // Send to printer
-        await sendToPrinter({
-            token:
-                `${guestData.invitation_side.charAt(0).toUpperCase()}` +
-                `${guestData.type.charAt(0).toUpperCase()}` +
-                `${guestData.id.toFixed(0).padStart(2, "0")}`,
-            name: guestData.name,
-            displayName: guestData.display_name || guestData.name,
-            side: guestData.invitation_side || "",
-            rsvp: guestData.expected_attendance || 0,
-            actualAttendance: guestData.actual_attendance || 0,
-            tableNumber: guestData.table || "",
-        });
+        for (let i = 0; i < 2; i++) {
+            await sendToPrinter({
+                token:
+                    `${guestData.invitation_side.charAt(0).toUpperCase()}` +
+                    `${guestData.type.charAt(0).toUpperCase()}` +
+                    `${guestData.id.toFixed(0).padStart(2, "0")}`,
+                name: guestData.name,
+                displayName: guestData.display_name || guestData.name,
+                side: guestData.invitation_side || "",
+                rsvp: guestData.expected_attendance || 0,
+                actualAttendance: guestData.actual_attendance || 0,
+                tableNumber: guestData.table || "",
+            });
+        }
 
         return NextResponse.json({
             success: true,

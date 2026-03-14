@@ -14,7 +14,7 @@ type TeapaiData = {
     id: number;
 };
 
-type PageState = "welcome" | "scanner" | "form";
+type PageState = "welcome" | "scanner" | "form" | "already-registered";
 
 export default function ScannerPage() {
     const router = useRouter();
@@ -216,6 +216,13 @@ export default function ScannerPage() {
                 setData(json);
                 setAttendance(json.expected_attendance || 1);
                 setPageState("form");
+            } else if (
+                res.status === 409 ||
+                (typeof json?.error === "string" &&
+                    json.error.toLowerCase().includes("already attended"))
+            ) {
+                setData(null);
+                setPageState("already-registered");
             } else {
                 setError(json.error || "Invitation not found");
             }
@@ -272,6 +279,14 @@ export default function ScannerPage() {
         setShowDropdown(false);
         setPageState("welcome");
         setScanning(false);
+    };
+
+    const backToScanner = () => {
+        setToken(null);
+        setData(null);
+        setError(null);
+        setPageState("scanner");
+        setScanning(true);
     };
 
     // Form sizing variables
@@ -413,9 +428,21 @@ export default function ScannerPage() {
                         backgroundSize: "100% 100%",
                         backgroundPosition: "center",
                         backgroundRepeat: "no-repeat",
-                        opacity: pageState === "form" ? 1 : 0,
-                        pointerEvents: pageState === "form" ? "auto" : "none",
-                        zIndex: pageState === "form" ? 20 : 10,
+                        opacity:
+                            pageState === "form" ||
+                            pageState === "already-registered"
+                                ? 1
+                                : 0,
+                        pointerEvents:
+                            pageState === "form" ||
+                            pageState === "already-registered"
+                                ? "auto"
+                                : "none",
+                        zIndex:
+                            pageState === "form" ||
+                            pageState === "already-registered"
+                                ? 20
+                                : 10,
                     }}
                 />
 
@@ -765,6 +792,27 @@ export default function ScannerPage() {
                                         {submitting
                                             ? "Processing..."
                                             : "Submit"}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {pageState === "already-registered" && !loading && (
+                            <div className="space-y-6 transition-opacity duration-1000 text-center">
+                                <div className="bg-white/85 backdrop-blur-sm border-2 border-[#b4352a] rounded-2xl shadow-2xl px-8 py-10 max-w-xl mx-auto">
+                                    <h2 className="palr45w text-4xl text-[#b4352a] font-semibold mb-4">
+                                        Tamu Sudah Terdaftar
+                                    </h2>
+                                    <p className="text-[#6d4c41] text-lg font-semibold mb-8">
+                                        Undangan ini sudah di-check-in
+                                        sebelumnya.
+                                    </p>
+                                    <button
+                                        type="button"
+                                        onClick={backToScanner}
+                                        className="px-8 py-3 bg-[#b4352a] hover:bg-[#8d2a21] text-white rounded-xl font-bold transition"
+                                    >
+                                        Scan Lagi
                                     </button>
                                 </div>
                             </div>

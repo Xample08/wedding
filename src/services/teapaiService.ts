@@ -149,9 +149,16 @@ export async function markAttendance(
         `UPDATE teapai 
          SET actual_attendance = ?, 
              gave_gift = ?, 
-             attended_by = ?
+             attended_by = ?,
+             attended_at = ?
          WHERE url_token = ? AND deleted_at IS NULL AND attended_by IS NULL`,
-        [data.actual_attendance, data.gave_gift, data.attended_by, token],
+        [
+            data.actual_attendance,
+            data.gave_gift,
+            data.attended_by,
+            data.attended_at,
+            token,
+        ],
     );
     return result.affectedRows > 0;
 }
