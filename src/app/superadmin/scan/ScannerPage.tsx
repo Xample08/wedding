@@ -19,6 +19,12 @@ type PageState = "welcome" | "scanner" | "form" | "already-registered";
 export default function ScannerPage() {
     const router = useRouter();
     const [pageState, setPageState] = useState<PageState>("welcome");
+    const [isUnlockingWelcome, setIsUnlockingWelcome] = useState(false);
+    const [isDraggingWelcome, setIsDraggingWelcome] = useState(false);
+    const [welcomeDragOffsetY, setWelcomeDragOffsetY] = useState(0);
+    const [welcomeDragStartY, setWelcomeDragStartY] = useState<number | null>(
+        null,
+    );
     const [scanning, setScanning] = useState(false);
     const [token, setToken] = useState<string | null>(null);
     const [data, setData] = useState<TeapaiData | null>(null);
@@ -53,10 +59,46 @@ export default function ScannerPage() {
         };
     }, [pageState, scanning]);
 
-    const handleWelcomeClick = () => {
+    const triggerWelcomeTransition = () => {
+        if (isUnlockingWelcome) return;
+        setIsUnlockingWelcome(true);
         setPageState("scanner");
         setScanning(true);
-        console.log("Welcome screen clicked, starting scanner...");
+        setIsDraggingWelcome(false);
+        setWelcomeDragStartY(null);
+        setWelcomeDragOffsetY(0);
+        setTimeout(() => {
+            setIsUnlockingWelcome(false);
+        }, 750);
+    };
+
+    const handleWelcomePointerDown = (
+        e: React.PointerEvent<HTMLDivElement>,
+    ) => {
+        if (pageState !== "welcome" || isUnlockingWelcome) return;
+        setIsDraggingWelcome(true);
+        setWelcomeDragStartY(e.clientY);
+        (e.currentTarget as HTMLDivElement).setPointerCapture?.(e.pointerId);
+    };
+
+    const handleWelcomePointerMove = (
+        e: React.PointerEvent<HTMLDivElement>,
+    ) => {
+        if (!isDraggingWelcome || welcomeDragStartY === null) return;
+        const delta = e.clientY - welcomeDragStartY;
+        setWelcomeDragOffsetY(Math.min(0, delta));
+    };
+
+    const handleWelcomePointerEnd = () => {
+        if (!isDraggingWelcome) return;
+        const passedThreshold = welcomeDragOffsetY <= -90;
+        setIsDraggingWelcome(false);
+        setWelcomeDragStartY(null);
+        if (passedThreshold) {
+            triggerWelcomeTransition();
+            return;
+        }
+        setWelcomeDragOffsetY(0);
     };
 
     const startCamera = async () => {
@@ -347,8 +389,12 @@ export default function ScannerPage() {
             <main className="relative h-full w-full overflow-hidden font-serif transition-all duration-1000">
                 {/* Welcome Page */}
                 <div
-                    className="absolute inset-0 w-full h-full flex items-center justify-center transition-opacity duration-1000 cursor-pointer"
-                    onClick={handleWelcomeClick}
+                    className="absolute inset-0 w-full h-full flex items-center justify-center transition-opacity duration-1000 cursor-grab active:cursor-grabbing touch-none"
+                    onPointerDown={handleWelcomePointerDown}
+                    onPointerMove={handleWelcomePointerMove}
+                    onPointerUp={handleWelcomePointerEnd}
+                    onPointerCancel={handleWelcomePointerEnd}
+                    onPointerLeave={handleWelcomePointerEnd}
                     style={{
                         backgroundImage:
                             "url('/teapai/background_welcome.PNG')",
@@ -356,10 +402,24 @@ export default function ScannerPage() {
                         backgroundSize: "100% 100%",
                         backgroundPosition: "center",
                         backgroundRepeat: "no-repeat",
-                        opacity: pageState === "welcome" ? 1 : 0,
+                        opacity:
+                            pageState === "welcome" || isUnlockingWelcome
+                                ? 1
+                                : 0,
                         pointerEvents:
-                            pageState === "welcome" ? "auto" : "none",
-                        zIndex: pageState === "welcome" ? 20 : 10,
+                            pageState === "welcome" && !isUnlockingWelcome
+                                ? "auto"
+                                : "none",
+                        zIndex:
+                            pageState === "welcome" || isUnlockingWelcome
+                                ? 20
+                                : 10,
+                        transform: isUnlockingWelcome
+                            ? "translateY(-100%)"
+                            : `translateY(${welcomeDragOffsetY}px)`,
+                        transition: isDraggingWelcome
+                            ? "none"
+                            : "transform 750ms cubic-bezier(0.22, 1, 0.36, 1), opacity 750ms ease",
                     }}
                 >
                     <div className="relative h-full w-full pointer-events-none animate-fade-in">
@@ -401,6 +461,9 @@ export default function ScannerPage() {
                                     strokeLinejoin="round"
                                 />
                             </svg>
+                            <p className="mt-1 text-[11px] md:text-xs text-[#a00] palr45w whitespace-nowrap">
+                                Slide up to continue
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -413,10 +476,18 @@ export default function ScannerPage() {
                         backgroundSize: "100% 100%",
                         backgroundPosition: "center",
                         backgroundRepeat: "no-repeat",
-                        opacity: pageState === "scanner" ? 1 : 0,
+                        opacity:
+                            pageState === "scanner" ||
+                            isDraggingWelcome ||
+                            isUnlockingWelcome
+                                ? 1
+                                : 0,
                         pointerEvents:
                             pageState === "scanner" ? "auto" : "none",
                         zIndex: pageState === "scanner" ? 20 : 10,
+                        transition: isDraggingWelcome
+                            ? "none"
+                            : "opacity 1000ms ease",
                     }}
                 />
 
@@ -458,9 +529,14 @@ export default function ScannerPage() {
                 <div
                     className="relative z-30 h-full w-full flex flex-col items-center justify-center px-6 transition-opacity duration-1000"
                     style={{
-                        opacity: pageState !== "welcome" ? 1 : 0,
+                        opacity:
+                            pageState !== "welcome" && !isUnlockingWelcome
+                                ? 1
+                                : 0,
                         pointerEvents:
-                            pageState !== "welcome" ? "auto" : "none",
+                            pageState !== "welcome" && !isUnlockingWelcome
+                                ? "auto"
+                                : "none",
                     }}
                 >
                     {/* Scanner or Form */}
