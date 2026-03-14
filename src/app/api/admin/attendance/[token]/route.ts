@@ -18,6 +18,12 @@ export async function GET(
                 { status: 404 },
             );
         }
+        if (data.attended_by) {
+            return NextResponse.json(
+                { error: "Invitation already attended" },
+                { status: 409 },
+            );
+        }
         return NextResponse.json(data);
     } catch (err: any) {
         return NextResponse.json(
@@ -77,8 +83,8 @@ export async function PATCH(
 
         if (!success) {
             return NextResponse.json(
-                { error: "Failed to mark attendance" },
-                { status: 500 },
+                { error: "Invitation already attended or not found" },
+                { status: 409 },
             );
         }
 

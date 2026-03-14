@@ -375,6 +375,7 @@ export async function searchInvitationsByName(
                 `SELECT url_token, name, display_name
                  FROM teapai
                  WHERE deleted_at IS NULL
+                   AND attended_by IS NULL
                  ORDER BY name ASC`,
             ),
         );
@@ -386,6 +387,7 @@ export async function searchInvitationsByName(
                 `SELECT url_token, name, display_name
                  FROM teapai
                  WHERE deleted_at IS NULL
+                                     AND attended_by IS NULL
                    AND (name LIKE ? OR display_name LIKE ?)
                  ORDER BY name ASC
                  LIMIT 10`,

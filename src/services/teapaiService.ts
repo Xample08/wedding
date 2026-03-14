@@ -150,7 +150,7 @@ export async function markAttendance(
          SET actual_attendance = ?, 
              gave_gift = ?, 
              attended_by = ?
-         WHERE url_token = ? AND deleted_at IS NULL`,
+         WHERE url_token = ? AND deleted_at IS NULL AND attended_by IS NULL`,
         [data.actual_attendance, data.gave_gift, data.attended_by, token],
     );
     return result.affectedRows > 0;
